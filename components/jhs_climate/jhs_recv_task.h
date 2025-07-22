@@ -2,7 +2,6 @@
 
 #include "esphome/core/log.h"
 #include "jhs_packets.h"
-#include <esp32-hal.h>
 extern "C" {
 #include "freertos/FreeRTOS.h"
 #include <freertos/task.h>
