@@ -4,6 +4,9 @@ from esphome.components import climate, binary_sensor
 from esphome.const import CONF_ID
 from esphome import pins
 
+MULTI_CONF = True
+
+AUTO_LOAD = [ "binary_sensor", "climate"]
 
 DEPENDENCIES = []
 
