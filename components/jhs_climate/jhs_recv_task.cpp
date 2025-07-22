@@ -231,17 +231,3 @@ void start_jhs_climate_recv_task(jhs_recv_task_config config)
     panel_rx_queue = xQueueCreate(32, JHS_PANEL_PACKET_SIZE);
     xTaskCreatePinnedToCore(jhs_recv_task_func, "jhs_recv_task", 2048, config_ptr, 5, &interrupt_task, 0);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

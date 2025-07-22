@@ -78,7 +78,7 @@ void JHSClimate::setup_rmt()
         .clk_src = RMT_CLK_SRC_DEFAULT,
         .gpio_num = (gpio_num_t)this->panel_tx_pin_->get_pin(),
         .mem_block_symbols = 64,
-        .resolution_hz = 1000000,  // 1 MHz -> 1us resolution
+        .resolution_hz = 1000000,
         .trans_queue_depth = 4,
         .flags = {
             .invert_out = false,
@@ -92,8 +92,10 @@ void JHSClimate::setup_rmt()
     ac_tx_config.gpio_num = (gpio_num_t)this->ac_tx_pin_->get_pin();
     rmt_new_tx_channel(&ac_tx_config, &this->rmt_ac_tx_channel);
 
-    rmt_tx_event_callbacks_t callbacks = {};
-    rmt_tx_register_event_callbacks(this->rmt_panel_tx_channel, &callbacks, nullptr);
+    rmt_copy_encoder_config_t encoder_config = {};
+    encoder_config.resolution = 1000000;
+    rmt_new_copy_encoder(&encoder_config, &this->rmt_encoder_);
+
     rmt_enable(this->rmt_panel_tx_channel);
     rmt_enable(this->rmt_ac_tx_channel);
 
@@ -423,34 +425,48 @@ void JHSClimate::recv_from_ac()
 }
 
 
-void JHSClimate::send_rmt_data(rmt_channel_t channel, const std::vector<uint8_t> &data)
+void JHSClimate::send_rmt_data(rmt_channel_handle_t channel, const std::vector<uint8_t> data)
 {
     ESP_LOGVV(TAG, "Sending RMT data: %s", bytes_to_hex2(data).c_str());
 
-    std::vector<rmt_symbol_word_t> symbols;
-    symbols.reserve(data.size() * 8 + 2);
+    // std::vector<rmt_symbol_word_t> symbols;
+    // symbols.reserve(data.size() * 8 + 2);
 
-    symbols.push_back({.level0 = 0, .duration0 = 1800, .level1 = 1, .duration1 = 900});
+    // symbols.push_back({.level0 = 0, .duration0 = 1800, .level1 = 1, .duration1 = 900});
 
-    for (size_t i = 0; i < data.size() * 8; i++) {
-        uint8_t bit = (data[i / 8] >> (7 - (i % 8))) & 1;
-        if (bit) {
-        symbols.push_back({.level0 = 0, .duration0 = 100, .level1 = 1, .duration1 = 300});
-        } else {
-        symbols.push_back({.level0 = 0, .duration0 = 100, .level1 = 1, .duration1 = 100});
-        }
-    }
+    // for (size_t i = 0; i < data.size() * 8; i++) {
+    //     uint8_t bit = (data[i / 8] >> (7 - (i % 8))) & 1;
+    //     if (bit) {
+    //     symbols.push_back({.level0 = 0, .duration0 = 100, .level1 = 1, .duration1 = 300});
+    //     } else {
+    //     symbols.push_back({.level0 = 0, .duration0 = 100, .level1 = 1, .duration1 = 100});
+    //     }
+    // }
 
-    symbols.push_back({.level0 = 0, .duration0 = 100, .level1 = 1, .duration1 = 100});
-    symbols.push_back({.level0 = 0, .duration0 = 200, .level1 = 1, .duration1 = 200});
+    // symbols.push_back({.level0 = 0, .duration0 = 100, .level1 = 1, .duration1 = 100});
+    // symbols.push_back({.level0 = 0, .duration0 = 200, .level1 = 1, .duration1 = 200});
+
+    // rmt_transmit_config_t tx_cfg = {
+    //     .loop_count = 0,
+    //     .flags = {.eot_level = 1}
+    // };
+
+    // rmt_transmit(channel, &rmt_encoder_, symbols.data(), symbols.size() * sizeof(rmt_symbol_word_t), &tx_cfg);
+    // rmt_tx_wait_all_done(channel, portMAX_DELAY);
 
     rmt_transmit_config_t tx_cfg = {
         .loop_count = 0,
-        .flags = {.eot_level = 1}
+        .flags = {.eot_level = 1},
     };
 
-    rmt_transmit(channel, &rmt_encoder_, symbols.data(), symbols.size() * sizeof(rmt_symbol_word_t), &tx_cfg);
-    rmt_tx_wait_all_done(channel, portMAX_DELAY);
+    ESP_ERROR_CHECK(rmt_transmit(
+        channel,
+        this->rmt_encoder_,
+        data.data(),
+        data.size(),
+        &tx_cfg));
+
+    ESP_ERROR_CHECK(rmt_tx_wait_all_done(channel, portMAX_DELAY));
 
     // std::vector<rmt_data_t> rmt_data_to_send = {};
     // rmt_data_to_send.reserve((data.size() * 8) + 2); // 8 bits per byte + 2 bits for start/stop

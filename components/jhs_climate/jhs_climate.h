@@ -4,12 +4,11 @@
 #include "esphome/core/gpio.h"
 #include "esphome/components/climate/climate.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
-#include "esphome/components/wifi/wifi_component.h"
-#include "esphome/components/ota/ota_backend.h"
+// #include "esphome/components/wifi/wifi_component.h"
+// #include "esphome/components/ota/ota_backend.h"
 
-#include "esphome.h"
+#include "driver/rmt_tx.h"
 
-#include "driver/rmt.h"
 #include "jhs_packets.h"
 #include <vector>
 
@@ -43,10 +42,13 @@ protected:
     esphome::InternalGPIOPin *panel_tx_pin_;
     esphome::InternalGPIOPin *panel_rx_pin_;
     esphome::binary_sensor::BinarySensor *water_full_sensor;
-    // esphome::ota::OTAComponent *OTAComponent =
 
-    rmt_channel_t *rmt_ac_tx;
-    rmt_channel_t *rmt_panel_tx;
+    // rmt_channel_t *rmt_ac_tx;
+    // rmt_channel_t *rmt_panel_tx;
+
+    rmt_channel_handle_t rmt_panel_tx_channel;
+    rmt_channel_handle_t rmt_ac_tx_channel;
+    rmt_encoder_handle_t rmt_encoder_;
 
     uint32_t last_adjustment = 0;
     const int ADJUSTMENT_INTERVAL = 100;
@@ -68,7 +70,8 @@ private:
     // setup helpers
     void setup_rmt();
 
-    void send_rmt_data(rmt_channel_t channel, const std::vector<uint8_t> &data);
+    // void send_rmt_data(rmt_channel_t channel, const std::vector<uint8_t> &data);
+    void send_rmt_data(rmt_channel_handle_t channel, const std::vector<uint8_t> &data);
 
     void recv_from_panel();
 
