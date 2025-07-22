@@ -7,6 +7,7 @@
 #include "jhs_recv_task.h"
 #include "esp32-hal.h"
 
+#include "Arduino.h"
 #include <sstream>
 #include <iomanip>
 
