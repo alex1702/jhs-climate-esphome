@@ -14,8 +14,10 @@ using namespace esphome;
 const size_t JHS_AC_PACKET_SIZE = (sizeof(JHSAcPacket) + 1);
 const size_t JHS_PANEL_PACKET_SIZE = 3;
 
-extern volatile QueueHandle_t ac_rx_queue;
-extern volatile QueueHandle_t panel_rx_queue;
+// extern volatile QueueHandle_t ac_rx_queue;
+// extern volatile QueueHandle_t panel_rx_queue;
+extern QueueHandle_t ac_rx_queue;
+extern QueueHandle_t panel_rx_queue;
 
 struct jhs_recv_task_config
 {
