@@ -1,5 +1,4 @@
 #pragma once
-#include <esp32-hal-log.h>
 #include "esphome/core/component.h"
 #include "esphome/core/hal.h"
 #include "esphome/core/gpio.h"
