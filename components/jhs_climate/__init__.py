@@ -11,8 +11,6 @@ AUTO_LOAD = [ "binary_sensor", "climate"]
 DEPENDENCIES = []
 
 
-# JHSClimateComponent = cg.global_ns.class_(
-#     "JHSClimate", cg.Component, climate.Climate)
 JHSClimateComponent_ns = cg.esphome_ns.namespace("JHSClimate")
 JHSClimateComponent = JHSClimateComponent_ns.class_(
     "JHSClimate", cg.Component)
