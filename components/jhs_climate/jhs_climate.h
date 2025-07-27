@@ -2,7 +2,6 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/climate/climate.h"
-#include "esphome/components/rmt/rmt.h"
 #include "driver/rmt_tx.h"
 #include "driver/rmt_rx.h"
 #include <vector>
