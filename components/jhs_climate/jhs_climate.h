@@ -1,83 +1,51 @@
 #pragma once
+
 #include "esphome/core/component.h"
-#include "esphome/core/hal.h"
-#include "esphome/core/gpio.h"
 #include "esphome/components/climate/climate.h"
-#include "esphome/components/binary_sensor/binary_sensor.h"
-// #include "esphome/components/wifi/wifi_component.h"
-// #include "esphome/components/ota/ota_backend.h"
-
-#include "driver/rmt_tx.h"
-
-#include "jhs_packets.h"
+#include "esphome/components/rmt/rmt.h"
 #include <vector>
 
+namespace esphome {
+namespace jhs_climate {
 
-namespace esphome
-{
-namespace JHSClimate
-{
+class JHSClimate : public climate::Climate, public Component {
+ public:
+  void setup() override;
+  void loop() override;
+  void dump_config() override;
 
-class JHSClimate : public esphome::Component, public esphome::climate::Climate
-{
-public:
-    // pin setters
-    void set_ac_tx_pin(esphome::InternalGPIOPin *ac_tx_pin) { ac_tx_pin_ = ac_tx_pin; }
-    void set_ac_rx_pin(esphome::InternalGPIOPin *ac_rx_pin) { ac_rx_pin_ = ac_rx_pin; }
-    void set_panel_tx_pin(esphome::InternalGPIOPin *panel_tx_pin) { panel_tx_pin_ = panel_tx_pin; }
-    void set_panel_rx_pin(esphome::InternalGPIOPin *panel_rx_pin) { panel_rx_pin_ = panel_rx_pin; }
+  climate::ClimateTraits traits() override;
+  void control(const climate::ClimateCall &call) override;
 
-    void set_water_full_sensor(esphome::binary_sensor::BinarySensor *water_full_sensor_) { water_full_sensor  = water_full_sensor_; }
+ protected:
+  void setup_rmt();
+  void send_ac_command(const std::vector<uint8_t> &data);
+  void send_panel_command(const std::vector<uint8_t> &data);
+  void recv_from_panel();
+  void recv_from_ac();
 
-    // esphome handlers
-    void setup() override;
-    void dump_config() override;
-    esphome::climate::ClimateTraits traits() override;
-    void control(const esphome::climate::ClimateCall &call) override;
-    void loop() override;
+  void parse_panel_frame(const std::vector<uint8_t> &frame);
+  void parse_ac_frame(const std::vector<uint8_t> &frame);
 
-protected:
-    esphome::InternalGPIOPin *ac_tx_pin_;
-    esphome::InternalGPIOPin *ac_rx_pin_;
-    esphome::InternalGPIOPin *panel_tx_pin_;
-    esphome::InternalGPIOPin *panel_rx_pin_;
-    esphome::binary_sensor::BinarySensor *water_full_sensor;
+  // Pins
+  rmt::RMTPin *ac_tx_pin_{nullptr};
+  rmt::RMTPin *panel_tx_pin_{nullptr};
+  rmt::RMTPin *panel_rx_pin_{nullptr};
 
-    // rmt_channel_t *rmt_ac_tx;
-    // rmt_channel_t *rmt_panel_tx;
+  rmt::RMTChannel *rmt_ac_tx_channel_{nullptr};
+  rmt::RMTChannel *rmt_panel_tx_channel_{nullptr};
+  rmt::RMTChannel *rmt_rx_channel_{nullptr};
 
-    rmt_channel_handle_t rmt_panel_tx_channel;
-    rmt_channel_handle_t rmt_ac_tx_channel;
-    rmt_encoder_handle_t rmt_encoder_;
+  // State
+  uint8_t mode_{0};
+  uint8_t fan_{0};
+  int8_t target_temperature_{0};
 
-    uint32_t last_adjustment = 0;
-    const int ADJUSTMENT_INTERVAL = 100;
-    int steps_left_to_adjust_mode = 0;
-    int steps_left_to_adjust_temp = 0;
-    int steps_left_to_adjust_fan = 0;
-    bool adjust_preset = false;
-    bool water_full = false;
-    uint32_t last_water_full = 0;
-    const int WATER_FULL_INTERVAL = 3000;
-
-    // is_adjusting is set to true when a change was made externally (e.g. homeassistant) and we are in the process of pressing button
-    bool is_adjusting();
-
-    float rmt_panel_tx_tick;
-    float rmt_ac_tx_tick;
-
-private:
-    // setup helpers
-    void setup_rmt();
-
-    // void send_rmt_data(rmt_channel_t channel, const std::vector<uint8_t> &data);
-    void send_rmt_data(rmt_channel_handle_t channel, const std::vector<uint8_t> &data);
-
-    void recv_from_panel();
-
-    void recv_from_ac();
-
-    void update_screen_if_needed();
+  int steps_left_to_adjust_mode_{0};
+  int steps_left_to_adjust_fan_{0};
+  int steps_left_to_adjust_temp_{0};
+  bool adjust_preset_{false};
 };
-}
-}
+
+}  // namespace jhs_climate
+}  // namespace esphome
