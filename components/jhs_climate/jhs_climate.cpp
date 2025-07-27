@@ -13,36 +13,48 @@ void JHSClimate::setup() {
 }
 
 void JHSClimate::setup_rmt() {
-  // Setup RMT nach aktuellem ESPHome API-Standard
-  // (Pins initialisieren, Kanäle konfigurieren, etc.)
+  if (rmt_component_ == nullptr) {
+    rmt_component_ = new rmt::RMTComponent();
+    rmt_component_->set_clk_div(80);  // 1 MHz Takt
+    rmt_component_->set_mem_block_num(1);
+    rmt_component_->setup();
+  }
 
-  rmt::RMTComponent *rmt_component = new rmt::RMTComponent();
-  rmt_component->set_clk_div(80);  // 1 MHz
-  rmt_component->set_mem_block_num(1);
-  rmt_component->setup();
-
+  // Pins anlegen (GPIO aus YAML oder config via get_pin())
   ac_tx_pin_ = new rmt::RMTPin(this->get_pin("ac_tx_pin"), rmt::RMT_TX_CHANNEL_0);
   panel_tx_pin_ = new rmt::RMTPin(this->get_pin("panel_tx_pin"), rmt::RMT_TX_CHANNEL_1);
   panel_rx_pin_ = new rmt::RMTPin(this->get_pin("panel_rx_pin"), rmt::RMT_RX_CHANNEL_0);
 
-  rmt_ac_tx_channel_ = new rmt::RMTChannel(ac_tx_pin_->channel());
-  rmt_panel_tx_channel_ = new rmt::RMTChannel(panel_tx_pin_->channel());
-  rmt_rx_channel_ = new rmt::RMTChannel(panel_rx_pin_->channel());
+  // Channels anlegen
+  rmt_ac_tx_channel_ = new rmt::RMTChannel(rmt::RMT_TX_CHANNEL_0);
+  rmt_panel_tx_channel_ = new rmt::RMTChannel(rmt::RMT_TX_CHANNEL_1);
+  rmt_rx_channel_ = new rmt::RMTChannel(rmt::RMT_RX_CHANNEL_0);
 
-  rmt_ac_tx_channel_->setup();
-  rmt_panel_tx_channel_->setup();
-  rmt_rx_channel_->setup();
+  // Channels konfigurieren
+  rmt_ac_tx_channel_->set_pin(*ac_tx_pin_);
+  rmt_panel_tx_channel_->set_pin(*panel_tx_pin_);
+  rmt_rx_channel_->set_pin(*panel_rx_pin_);
 
+  rmt_ac_tx_channel_->set_receive(false);
+  rmt_panel_tx_channel_->set_receive(false);
   rmt_rx_channel_->set_receive(true);
-  rmt_rx_channel_->set_idle_level(false);
-  rmt_rx_channel_->enable();
 
+  // Idle level konfigurieren
   rmt_ac_tx_channel_->set_idle_level(false);
   rmt_panel_tx_channel_->set_idle_level(false);
+  rmt_rx_channel_->set_idle_level(false);
 
+  // Channels mit Komponente verbinden
+  rmt_component_->add_channel(rmt_ac_tx_channel_);
+  rmt_component_->add_channel(rmt_panel_tx_channel_);
+  rmt_component_->add_channel(rmt_rx_channel_);
+
+  // Channels starten (enable)
   rmt_ac_tx_channel_->enable();
   rmt_panel_tx_channel_->enable();
+  rmt_rx_channel_->enable();
 }
+
 
 void JHSClimate::send_ac_command(const std::vector<uint8_t> &data) {
   ESP_LOGD(TAG, "send_ac_command: %s", format_hex_pretty(data).c_str());

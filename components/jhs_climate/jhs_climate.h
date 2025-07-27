@@ -46,6 +46,8 @@ class JHSClimate : public climate::Climate, public Component {
   int steps_left_to_adjust_fan_{0};
   int steps_left_to_adjust_temp_{0};
   bool adjust_preset_{false};
+
+  rmt::RMTComponent *rmt_component_{nullptr};
 };
 
 }  // namespace jhs_climate
