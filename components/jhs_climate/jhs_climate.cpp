@@ -1,4 +1,5 @@
 #include "jhs_climate.h"
+#include "esphome/components/rmt/rmt.h"
 #include "esphome/core/log.h"
 
 namespace esphome {
