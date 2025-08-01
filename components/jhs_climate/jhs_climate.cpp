@@ -1,7 +1,7 @@
 #include "jhs_climate.h"
 
 #include "esphome/core/log.h"
-#include "esp32-hal-rmt.h"
+//#include "esp32-hal-rmt.h"
 #include "soc/rmt_struct.h"
 
 #include "jhs_recv_task.h"
