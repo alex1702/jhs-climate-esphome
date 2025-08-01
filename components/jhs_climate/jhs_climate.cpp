@@ -5,7 +5,7 @@
 #include "soc/rmt_struct.h"
 
 #include "jhs_recv_task.h"
-#include "esp32-hal.h"
+//#include "esp32-hal.h"
 
 #include <sstream>
 #include <iomanip>
