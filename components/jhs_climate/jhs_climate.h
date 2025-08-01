@@ -9,7 +9,7 @@
 //#include "esphome/components/ota/ota_component.h"
 #include "esphome.h"
 
-#include "esp32-hal-rmt.h"
+//#include "esp32-hal-rmt.h"
 #include "soc/rmt_struct.h"
 #include "jhs_packets.h"
 #include <vector>
