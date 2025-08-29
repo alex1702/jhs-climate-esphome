@@ -1,5 +1,110 @@
 #include "jhs_packets.h"
+#include <cstring>
 
+#include "esphome/core/log.h"
+
+static const char *TAG = "JHSClimate";
+
+static char seven_segment_to_char(uint8_t s7)
+{
+    switch (s7)
+    {
+    case 0x3F:
+        return '0';
+    case 0x06:
+        return '1';
+    case 0x5B:
+        return '2';
+    case 0x4F:
+        return '3';
+    case 0x66:
+        return '4';
+    case 0x6D:
+        return '5';
+    case 0x7D:
+        return '6';
+    case 0x07:
+        return '7';
+    case 0x7F:
+        return '8';
+    case 0x6F:
+        return '9';
+    case 0x77:
+        return 'A';
+    case 0x7C:
+        return 'B';
+    case 0x39:
+        return 'C';
+    case 0x5E:
+        return 'D';
+    case 0x79:
+        return 'E';
+    case 0x71:
+        return 'F';
+    case 0x74:
+        return 'h';
+    case 0x76:
+        return 'H';
+    default:
+        return '?';
+    }
+}
+static uint8_t char_to_seven_segment(char c)
+{
+    switch (c)
+    {
+    case '0':
+        return 0x3F;
+    case '1':
+        return 0x06;
+    case '2':
+        return 0x5B;
+    case '3':
+        return 0x4F;
+    case '4':
+        return 0x66;
+    case '5':
+        return 0x6D;
+    case '6':
+        return 0x7D; 
+    case '7':
+        return 0x07;
+    case '8':
+        return 0x7F;
+    case '9':
+        return 0x6F;
+    case 'A':
+        return 0x77;
+    case 'B':
+        return 0x7C;
+    case 'C':
+        return 0x39;
+    case 'D':
+        return 0x5E;
+    case 'E':
+        return 0x79;
+    case 'F':
+        return 0x71;
+    case 'd':
+        return 0x5e;
+    case 'h':
+        return 0x74;
+    case 'H':
+        return 0x76;
+    default:
+        return 0x00;
+    }
+}
+
+std::string bytes_to_hex(std::vector<uint8_t> bytes)
+{
+    std::stringstream ss;
+    for (auto b : bytes)
+    {
+        ss << std::hex << std::setfill('0') << std::setw(2) << (int)b;
+    }
+    return ss.str();
+}
 
 int JHSAcPacket::get_temp()
 {
@@ -38,7 +143,7 @@ esphome::optional<JHSAcPacket> JHSAcPacket::parse(const std::vector<uint8_t> &da
         return esphome::optional<JHSAcPacket>();
     }
     JHSAcPacket packet;
-    std::memcpy(&packet, data.data(), sizeof(JHSAcPacket));
+    memcpy(&packet, data.data(), sizeof(JHSAcPacket));
     uint8_t checksum = data.back();
     uint8_t checksum_calculated = 90;
     for (size_t i = 0; i < data.size() - 1; i++) {
@@ -56,7 +161,7 @@ std::vector<uint8_t> JHSAcPacket::to_wire_format()
 {
     std::vector<uint8_t> data;
     data.resize(sizeof(JHSAcPacket) + 1);
-    std::memcpy(data.data(), &this->addr, sizeof(JHSAcPacket));
+    memcpy(data.data(), &this->addr, sizeof(JHSAcPacket));
     uint8_t checksum = 90;
     for (size_t i = 0; i < data.size() - 1; i++) {
         checksum += data[i];
