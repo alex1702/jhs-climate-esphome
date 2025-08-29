@@ -9,9 +9,11 @@ void JHSClimate::setup() {
 }
 
 void JHSClimate::update() {
+  if (!uart_) return;
+
   uint8_t b;
-  while (this->available()) {
-    if (this->read_byte(&b)) {
+  while (uart_->available()) {
+    if (uart_->read_byte(&b)) {
       ESP_LOGI(TAG, "UART received: 0x%02X ('%c')", b, (b >= 32 && b <= 126) ? b : '.');
     }
   }
