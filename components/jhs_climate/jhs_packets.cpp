@@ -1,5 +1,7 @@
 #include "jhs_packets.h"
+#include <sstream>
 #include <cstring>
+#include <iomanip>
 
 #include "esphome/core/log.h"
 
