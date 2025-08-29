@@ -1,18 +1,12 @@
-#pragma once
-#include "esphome.h"
-#include "esphome/components/uart/uart_component.h"
-
-namespace JHS {
-
-class JHSClimate : public PollingComponent {
+class JHSClimate {
 public:
-  explicit JHSClimate(esphome::uart::UARTComponent *uart) : uart_(uart) {}
+  JHSClimate(int panel_tx_pin, int panel_rx_pin, int uart_num = UART_NUM1);
 
-  void setup() override;
-  void update() override;
+  void setup();
+  void loop();
 
 private:
-  esphome::uart::UARTComponent *uart_;
+  int tx_pin_;
+  int rx_pin_;
+  uart_port_t uart_num_;
 };
-
-}  // namespace JHS
