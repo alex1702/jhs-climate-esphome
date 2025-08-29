@@ -4,7 +4,8 @@
 
 namespace JHS {
 
-class JHSClimate : public Component {
+class JHSClimate : public esphome::Component
+{
 public:
   JHSClimate(int panel_tx_pin, int panel_rx_pin, uart_port_t uart_num = UART_NUM_1);
 
