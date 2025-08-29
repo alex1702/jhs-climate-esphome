@@ -5,7 +5,7 @@ from esphome.const import CONF_ID
 DEPENDENCIES = []
 
 jhs_climate_ns = cg.esphome_ns.namespace("JHS")
-JHSClimate = jhs_climate_ns.class_("JHSClimate")
+JHSClimate = jhs_climate_ns.class_("JHSClimate", cg.Component)
 
 CONFIG_SCHEMA = cv.Schema(
     {
