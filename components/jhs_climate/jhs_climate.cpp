@@ -24,14 +24,34 @@ void JHSClimate::setup() {
 }
 
 
+// void JHSClimate::loop() {
+//   uint8_t buf[128];
+//   int len = uart_read_bytes(uart_num_, buf, sizeof(buf), 10 / portTICK_PERIOD_MS);
+//   if (len > 0) {
+//     for (int i = 0; i < len; i++) {
+//       ESP_LOGI(TAG, "UART received: 0x%02X ('%c')", buf[i], (buf[i] >= 32 && buf[i] <= 126) ? buf[i] : '.');
+//     }
+//   }
+// }
+
 void JHSClimate::loop() {
-  uint8_t buf[128];
-  int len = uart_read_bytes(uart_num_, buf, sizeof(buf), 10 / portTICK_PERIOD_MS);
+  uint8_t b;
+  int len = uart_read_bytes(uart_num_, &b, 1, 0);
   if (len > 0) {
-    for (int i = 0; i < len; i++) {
-      ESP_LOGI(TAG, "UART received: 0x%02X ('%c')", buf[i], (buf[i] >= 32 && buf[i] <= 126) ? buf[i] : '.');
-    }
+    handle_uart_byte(b);
   }
 }
+
+void JHSClimate::handle_uart_byte(uint8_t b) {
+  buffer_.push_back(b);
+
+  // Prüfen, ob wir ein komplettes Paket haben
+  if (buffer_.size() == sizeof(JHSAcPacket) + 1) {
+    JHSAcPacket pkt = JHSAcPacket::parse(buffer_);
+    ESP_LOGI("JHSClimate", "Packet: %s", pkt.to_string().c_str());
+    buffer_.clear();
+  }
+}
+
 
 }  // namespace JHS

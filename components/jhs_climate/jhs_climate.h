@@ -1,6 +1,7 @@
 #pragma once
 #include "esphome.h"
 #include "driver/uart.h"
+#include "jhs_packets.h"
 
 namespace JHS {
 
@@ -16,6 +17,9 @@ private:
   int tx_pin_;
   int rx_pin_;
   uart_port_t uart_num_;
+  std::vector<uint8_t> buffer_;
+
+  void handle_uart_byte(uint8_t b);
 };
 
 }  // namespace JHS
