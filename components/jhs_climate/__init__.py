@@ -17,4 +17,4 @@ CONFIG_SCHEMA = cv.Schema(
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID], config["panel_tx_pin"], config["panel_rx_pin"])
-    await cg.register_component(var, config)  # <-- hier das 'config' Argument hinzufügen
+    await cg.register_component(var, config)

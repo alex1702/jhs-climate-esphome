@@ -9,6 +9,7 @@ JHSClimate::JHSClimate(int panel_tx_pin, int panel_rx_pin, int uart_num)
 
 void JHSClimate::setup() {
   ESP_LOGI(TAG, "JHSClimate initialized on TX=%d RX=%d", tx_pin_, rx_pin_);
+
   uart_config_t uart_config = {
       .baud_rate = 9600,
       .data_bits = UART_DATA_8_BITS,
@@ -21,6 +22,7 @@ void JHSClimate::setup() {
   uart_set_pin(uart_num_, tx_pin_, rx_pin_, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
   uart_driver_install(uart_num_, 512, 0, 0, NULL, 0);
 }
+
 
 void JHSClimate::loop() {
   uint8_t buf[128];
