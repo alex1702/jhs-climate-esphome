@@ -4,7 +4,7 @@ static const char *TAG = "JHSClimate";
 
 namespace JHS {
 
-JHSClimate::JHSClimate(int panel_tx_pin, int panel_rx_pin, int uart_num)
+JHSClimate::JHSClimate(int panel_tx_pin, int panel_rx_pin, uart_port_t uart_num)
     : tx_pin_(panel_tx_pin), rx_pin_(panel_rx_pin), uart_num_(uart_num) {}
 
 void JHSClimate::setup() {
