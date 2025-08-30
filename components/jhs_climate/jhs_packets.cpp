@@ -8,7 +8,7 @@ namespace JHS {
 static const char *TAG = "JHSClimate";
 
 // Hilfsfunktion: Paket in lesbare String-Darstellung
-std::string JHSAcPacket::to_string() {
+std::string JHSAcPacket::to_string() const {
   std::stringstream ss;
   ss << "DISP:" << (int)first_digit << (int)second_digit;
   if (power) ss << " POWER";
