@@ -2,6 +2,7 @@
 #include "esphome/core/log.h"
 #include <cstring>
 #include <sstream>
+#include <iomanip>
 
 namespace JHS {
 
