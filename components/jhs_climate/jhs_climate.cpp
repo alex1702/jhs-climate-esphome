@@ -3,6 +3,7 @@
 #include "jhs_recv_task.h"
 
 #include <sstream>
+#include <iomanip>
 #include <vector>
 
 static const char *TAG = "JHSClimate";
