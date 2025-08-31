@@ -1,10 +1,9 @@
 #pragma once
 #include "esphome.h"
-//#include "driver/uart.h"
 #include "jhs_packets.h"
-//#include "esphome/core/component.h"
-// #include "esphome/components/gpio/gpio.h"
 #include "esphome/core/gpio.h"
+
+#include "esphome/components/rmt/rmt_output.h"
 
 namespace JHS {
 
@@ -33,11 +32,38 @@ protected:
     esphome::InternalGPIOPin *panel_rx_pin_;
     // esphome::binary_sensor::BinarySensor *water_full_sensor;
 
+    // rmt_obj_t *rmt_ac_tx;
+    // rmt_obj_t *rmt_panel_tx;
+    esphome::rmt::RMTChannel *rmt_panel_tx;
+
+    float rmt_panel_tx_tick;
+    float rmt_ac_tx_tick;
+
+    // uint32_t last_adjustment = 0;
+    // const int ADJUSTMENT_INTERVAL = 100;
+    // int steps_left_to_adjust_mode = 0;
+    // int steps_left_to_adjust_temp = 0;
+    // int steps_left_to_adjust_fan = 0;
+    // bool adjust_preset = false;
+    // bool water_full = false;
+    // uint32_t last_water_full = 0;
+    // const int WATER_FULL_INTERVAL = 3000;
+
+    // is_adjusting is set to true when a change was made externally (e.g. homeassistant) and we are in the process of pressing button
+    bool is_adjusting();
+
 private:
+
+    void setup_rmt();
+
+    // void send_rmt_data(rmt_obj_t *rmt, std::vector<uint8_t> data);
+    void send_rmt_data(esphome::rmt::RMTChannel *rmt_channel, const std::vector<uint8_t> &data);
 
     void recv_from_panel();
 
     void recv_from_ac();
+
+    // void update_screen_if_needed();
 };
 
 }  // namespace JHS
