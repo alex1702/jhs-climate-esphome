@@ -1,6 +1,8 @@
 #include "jhs_recv_task.h"
 //#include <cstring>
 #include <freertos/FreeRTOS.h>
+#include <freertos/queue.h>
+#include <freertos/task.h>
 #include "esphome/core/gpio.h"
 
 #include "jhs_packets.h"
@@ -61,9 +63,13 @@ static void IRAM_ATTR jhs_ac_rx_isr(void* arg)
 // static volatile unsigned int panel_rx_bits_from_start = 0;
 static volatile uint8_t panel_rx_packet[JHS_PANEL_PACKET_SIZE];
 
-static void IRAM_ATTR jhs_panel_rx_isr(void* arg)
+static void IRAM_ATTR jhs_panel_rx_isr(QueueHandle_t *q)//(void* arg)
 {
-    xQueueSend(panel_rx_queue, (void *) panel_rx_packet, 0);
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    // panel_rx_packet decayed to pointer; size must match queue item size
+    xQueueSendFromISR(*q, (void *)panel_rx_packet, &xHigherPriorityTaskWoken);
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    // xQueueSend(panel_rx_queue, (void *) panel_rx_packet, 0);
     // unsigned long length = micros() - panel_rx_last_falling_edge_time;
     // panel_rx_last_falling_edge_time = micros();
     // if (length > 20 && length < 32 * 250)
@@ -109,8 +115,8 @@ static void jhs_recv_task_func(void *arg)
 
     config_ptr->ac_rx_pin->pin_mode(esphome::gpio::FLAG_INPUT);
     config_ptr->panel_rx_pin->pin_mode(esphome::gpio::FLAG_INPUT | esphome::gpio::FLAG_PULLDOWN);
-    config_ptr->ac_rx_pin->attach_interrupt(jhs_ac_rx_isr, nullptr, esphome::gpio::INTERRUPT_FALLING_EDGE);
-    config_ptr->panel_rx_pin->attach_interrupt(jhs_panel_rx_isr, nullptr, esphome::gpio::INTERRUPT_FALLING_EDGE);
+    // config_ptr->ac_rx_pin->attach_interrupt(jhs_ac_rx_isr, nullptr, esphome::gpio::INTERRUPT_FALLING_EDGE);
+    config_ptr->panel_rx_pin->attach_interrupt(jhs_panel_rx_isr, &panel_rx_queue, esphome::gpio::INTERRUPT_FALLING_EDGE);
 
     // auto* ac_rx_input = new esphome::gpio::GPIOInput(config_ptr->ac_rx_pin);
     // ac_rx_input->pin_mode(esphome::gpio::FLAG_INPUT);
