@@ -2,6 +2,8 @@
 
 #include "jhs_recv_task.h"
 
+#include <vector>
+
 static const char *TAG = "JHSClimate";
 
 namespace JHS {
@@ -32,56 +34,56 @@ void JHSClimate::recv_from_panel()
     while (xQueueReceive(panel_rx_queue, &packet, 0))
     {
         ESP_LOGI("ISR", "Paket empfangen");
-        // std::vector<uint8_t> packet_vector(packet, packet + JHS_PANEL_PACKET_SIZE);
+        std::vector<uint8_t> packet_vector(packet, packet + JHS_PANEL_PACKET_SIZE);
 
-        // if (memcmp(packet, &KEEPALIVE_PACKET, JHS_PANEL_PACKET_SIZE) == 0)
-        // {
-        //     ESP_LOGVV(TAG, "Received keepalive packet from panel");
-        // }
-        // else if (memcmp(packet, &BUTTON_ON, JHS_PANEL_PACKET_SIZE) == 0)
-        // {
-        //     ESP_LOGI(TAG, "Received BUTTON_ON from panel");
-        // }
-        // else if (memcmp(packet, &BUTTON_LOWER_TEMP, JHS_PANEL_PACKET_SIZE) == 0)
-        // {
-        //     ESP_LOGI(TAG, "Received BUTTON_LOWER_TEMP from panel");
-        // }
-        // else if (memcmp(packet, &BUTTON_HIGHER_TEMP, JHS_PANEL_PACKET_SIZE) == 0)
-        // {
-        //     ESP_LOGI(TAG, "Received BUTTON_HIGHER_TEMP from panel");
-        // }
-        // else if (memcmp(packet, &BUTTON_MODE, JHS_PANEL_PACKET_SIZE) == 0)
-        // {
-        //     ESP_LOGI(TAG, "Received BUTTON_MODE from panel");
-        // }
-        // else if (memcmp(packet, &BUTTON_FAN, JHS_PANEL_PACKET_SIZE) == 0)
-        // {
-        //     ESP_LOGI(TAG, "Received BUTTON_FAN from panel");
-        // }
-        // else if (memcmp(packet, &BUTTON_SLEEP, JHS_PANEL_PACKET_SIZE) == 0)
-        // {
-        //     ESP_LOGI(TAG, "Received BUTTON_SLEEP from panel");
-        // }
-        // else if (memcmp(packet, &BUTTON_TIMER, JHS_PANEL_PACKET_SIZE) == 0)
-        // {
-        //     ESP_LOGI(TAG, "Received BUTTON_TIMER from panel");
-        // }
-        // else if (memcmp(packet, &BUTTON_UNIT_CHANGE, JHS_PANEL_PACKET_SIZE) == 0)
-        // {
-        //     ESP_LOGI(TAG, "Received BUTTON_UNIT_CHANGE from panel, ignoring");
-        //     JHSAcPacket hello_packet;
-        //     hello_packet.beep_amount = 3;
-        //     hello_packet.beep_length = 2;
-        //     hello_packet.power = 0;
-        //     hello_packet.cool = 1;
-        //     hello_packet.set_display("dd");
-        //     this->send_rmt_data(this->rmt_panel_tx, hello_packet.to_wire_format());
-        //     continue;
-        // }
-        // else
-        // {
-        //     ESP_LOGI(TAG, "Received unknown packet from panel: %s", bytes_to_hex2(packet_vector).c_str());
-        // }
+        if (memcmp(packet, &KEEPALIVE_PACKET, JHS_PANEL_PACKET_SIZE) == 0)
+        {
+            ESP_LOGVV(TAG, "Received keepalive packet from panel");
+        }
+        else if (memcmp(packet, &BUTTON_ON, JHS_PANEL_PACKET_SIZE) == 0)
+        {
+            ESP_LOGI(TAG, "Received BUTTON_ON from panel");
+        }
+        else if (memcmp(packet, &BUTTON_LOWER_TEMP, JHS_PANEL_PACKET_SIZE) == 0)
+        {
+            ESP_LOGI(TAG, "Received BUTTON_LOWER_TEMP from panel");
+        }
+        else if (memcmp(packet, &BUTTON_HIGHER_TEMP, JHS_PANEL_PACKET_SIZE) == 0)
+        {
+            ESP_LOGI(TAG, "Received BUTTON_HIGHER_TEMP from panel");
+        }
+        else if (memcmp(packet, &BUTTON_MODE, JHS_PANEL_PACKET_SIZE) == 0)
+        {
+            ESP_LOGI(TAG, "Received BUTTON_MODE from panel");
+        }
+        else if (memcmp(packet, &BUTTON_FAN, JHS_PANEL_PACKET_SIZE) == 0)
+        {
+            ESP_LOGI(TAG, "Received BUTTON_FAN from panel");
+        }
+        else if (memcmp(packet, &BUTTON_SLEEP, JHS_PANEL_PACKET_SIZE) == 0)
+        {
+            ESP_LOGI(TAG, "Received BUTTON_SLEEP from panel");
+        }
+        else if (memcmp(packet, &BUTTON_TIMER, JHS_PANEL_PACKET_SIZE) == 0)
+        {
+            ESP_LOGI(TAG, "Received BUTTON_TIMER from panel");
+        }
+        else if (memcmp(packet, &BUTTON_UNIT_CHANGE, JHS_PANEL_PACKET_SIZE) == 0)
+        {
+            ESP_LOGI(TAG, "Received BUTTON_UNIT_CHANGE from panel, ignoring");
+            JHSAcPacket hello_packet;
+            hello_packet.beep_amount = 3;
+            hello_packet.beep_length = 2;
+            hello_packet.power = 0;
+            hello_packet.cool = 1;
+            hello_packet.set_display("dd");
+            // this->send_rmt_data(this->rmt_panel_tx, hello_packet.to_wire_format());
+            continue;
+        }
+        else
+        {
+            ESP_LOGI(TAG, "Received unknown packet from panel: %s", bytes_to_hex2(packet_vector).c_str());
+        }
         // this->send_rmt_data(this->rmt_ac_tx, packet_vector);
     }
 }
