@@ -20,7 +20,7 @@ static TaskHandle_t interrupt_task;
 // static volatile unsigned int ac_rx_bits_from_start = 0;
 // static volatile uint8_t ac_rx_packet[JHS_AC_PACKET_SIZE];
 
-static void IRAM_ATTR jhs_ac_rx_isr()
+static void IRAM_ATTR jhs_ac_rx_isr(void* arg)
 {
     // unsigned long length = micros() - ac_rx_last_falling_edge_time;
     // ac_rx_last_falling_edge_time = micros();
@@ -61,7 +61,7 @@ static void IRAM_ATTR jhs_ac_rx_isr()
 // static volatile unsigned int panel_rx_bits_from_start = 0;
 static volatile uint8_t panel_rx_packet[JHS_PANEL_PACKET_SIZE];
 
-static void IRAM_ATTR jhs_panel_rx_isr()
+static void IRAM_ATTR jhs_panel_rx_isr(void* arg)
 {
     xQueueSend(panel_rx_queue, (void *) panel_rx_packet, 0);
     // unsigned long length = micros() - panel_rx_last_falling_edge_time;
@@ -109,8 +109,8 @@ static void jhs_recv_task_func(void *arg)
 
     config_ptr->ac_rx_pin->pin_mode(esphome::gpio::FLAG_INPUT);
     config_ptr->panel_rx_pin->pin_mode(esphome::gpio::FLAG_INPUT | esphome::gpio::FLAG_PULLDOWN);
-    config_ptr->ac_rx_pin->attach_interrupt(jhs_ac_rx_isr, esphome::gpio::INTERRUPT_FALLING_EDGE);
-    config_ptr->panel_rx_pin->attach_interrupt(jhs_panel_rx_isr, esphome::gpio::INTERRUPT_FALLING_EDGE);
+    config_ptr->ac_rx_pin->attach_interrupt(jhs_ac_rx_isr, nullptr, esphome::gpio::INTERRUPT_FALLING_EDGE);
+    config_ptr->panel_rx_pin->attach_interrupt(jhs_panel_rx_isr, nullptr, esphome::gpio::INTERRUPT_FALLING_EDGE);
 
 
     // gpio_config_t io_ac_conf = {};
