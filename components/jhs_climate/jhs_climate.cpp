@@ -1,7 +1,6 @@
 #include "jhs_climate.h"
 #include "jhs_recv_task.h"
 
-#include "driver/rmt_struct.h"
 #include "esphome.h"
 
 #include <sstream>
@@ -44,17 +43,35 @@ void JHSClimate::setup()
 void JHSClimate::setup_rmt()
 {
 
-    rmt_panel_tx = new RMTChannel();
-    rmt_panel_tx->setup();
+    // rmt_panel_tx = new RMTChannel();
+    // rmt_panel_tx->setup();
 
-    rmt_panel_tx_->set_pin(this->panel_tx_pin_->get_pin());
-    // rmt_panel_tx_->set_clock_divider(80); // z.B. 1 tick = 1 µs bei 80 MHz
-    rmt_panel_tx_->set_clock_divider(200); // 1 Tick = 2,5 µs bei 80 MHz
+    // rmt_panel_tx_->set_pin(this->panel_tx_pin_->get_pin());
+    // // rmt_panel_tx_->set_clock_divider(80); // z.B. 1 tick = 1 µs bei 80 MHz
+    // rmt_panel_tx_->set_clock_divider(200); // 1 Tick = 2,5 µs bei 80 MHz
 
-    for (int i = 0; i < 8; i++) {
-        RMT.conf_ch[i].conf1.idle_out_en = 1;   // aktivieren
-        RMT.conf_ch[i].conf1.idle_out_lv = 1;   // HIGH
-    }
+    rmt_panel_tx = RMT_CHANNEL_0;
+
+    rmt_config_t rmt_panel_tx_config = {};
+    rmt_panel_tx_config.channel = rmt_panel_tx;          // RMT-Kanal (0-7 auf ESP32)
+    rmt_panel_tx_config.gpio_num = static_cast<gpio_num_t>(this->panel_tx_pin_->get_pin());            // Pin für TX
+    rmt_panel_tx_config.clk_div = 200;                     // Teiler für 1 tick = 1µs bei 80MHz APB bei 80; 1 tick = 2,5µs bei 80MHz APB bei 200
+    rmt_panel_tx_config.mem_block_num = 3;                // Anzahl Speicherblöcke (1-8) 1 block entspricht 64 Byte und 3 entsprechen den 192 Byte
+    rmt_panel_tx_config.rmt_mode = RMT_MODE_TX;           // TX-Modus
+    rmt_panel_tx_config.tx_config.loop_en = false;        // kein Loop
+    rmt_panel_tx_config.tx_config.carrier_en = false;    // kein IR-Carrier
+    rmt_panel_tx_config.tx_config.idle_output_en = true; // Pin nach Idle high/low
+    rmt_panel_tx_config.tx_config.idle_level = RMT_IDLE_LEVEL_HIGH;
+
+    rmt_config(&rmt_panel_tx_config);
+    rmt_driver_install(rmt_panel_tx_config.channel, 0, 0);
+
+
+
+    // for (int i = 0; i < 8; i++) {
+    //     RMT.conf_ch[i].conf1.idle_out_en = 1;   // aktivieren
+    //     RMT.conf_ch[i].conf1.idle_out_lv = 1;   // HIGH
+    // }
 
     // this->rmt_panel_tx = rmtInit(this->panel_tx_pin_->get_pin(), true, RMT_MEM_192);
     // this->rmt_panel_tx_tick = rmtSetTick(this->rmt_panel_tx, 2500); // papieska wartość
@@ -346,91 +363,64 @@ void JHSClimate::recv_from_ac()
     }
 }
 
-void send_rmt_data(RMTChannel *rmt_channel, const std::vector<uint8_t> &data) {
+void send_rmt_data(RMTChannel rmt_channel, const std::vector<uint8_t> &data) {
     if (!rmt_channel) return;
 
     ESP_LOGVV(TAG, "Sending RMT data: %s", bytes_to_hex2(data).c_str());
 
-    std::vector<RMTItem> rmt_items_to_send;
 
-    // JHS-Protokoll: Beispielwerte (µs)
-    // const uint32_t T_HIGH_0 = 250;  // Bit 0 High
-    // const uint32_t T_LOW_0  = 250;  // Bit 0 Low
-    // const uint32_t T_HIGH_1 = 500;  // Bit 1 High
-    // const uint32_t T_LOW_1  = 250;  // Bit 1 Low
-    // const uint32_t T_GAP    = 1000; // Pause zwischen Bytes (optional)
 
-    // for (size_t i = 0; i < data.size(); i++) {
-    //     uint8_t byte = data[i];
+    std::vector<rmt_item32_t> rmt_data_to_send = {};
+    rmt_data_to_send.reserve((data.size() * 8) + 2); // 8 bits per byte + 2 bits for start/stop
 
-    //     // Optional: Startbit
-    //     rmt_items_to_send.push_back({.duration0 = T_LOW_1, .level0 = 0, .duration1 = T_LOW_1, .level1 = 1});
-
-    //     // Datenbits MSB zuerst
-    //     for (int bit = 7; bit >= 0; bit--) {
-    //         bool is_one = (byte >> bit) & 1;
-    //         if (is_one) {
-    //             rmt_items_to_send.push_back({.duration0 = T_HIGH_1, .level0 = 1, .duration1 = T_LOW_1, .level1 = 0});
-    //         } else {
-    //             rmt_items_to_send.push_back({.duration0 = T_HIGH_0, .level0 = 1, .duration1 = T_LOW_0, .level1 = 0});
-    //         }
-    //     }
-
-    //     // Optional: Stopbit
-    //     rmt_items_to_send.push_back({.duration0 = T_LOW_1, .level0 = 0, .duration1 = T_GAP, .level1 = 0});
-    // }
-
-    // Startbit
-    // rmt_data_t leadin;
-    // leadin.level0 = 0;
-    // leadin.duration0 = 1800;
-    // leadin.level1 = 1;
-    // leadin.duration1 = 900;
-    rmt_items_to_send.push_back({.duration0 = 1800, .level0 = 0, .duration1 = 900, .level1 = 1});
-
+    // startbit
+    rmt_item32_t leadin;
+    leadin.level0 = 0;
+    leadin.duration0 = 1800;
+    leadin.level1 = 1;
+    leadin.duration1 = 900;
+    rmt_data_to_send.push_back(leadin);
     for (size_t i = 0; i < data.size() * 8; i++)
     {
         uint8_t bit = (data[i / 8] >> (7 - (i % 8))) & 1;
 
         if (bit)
         {
-            // rmt_data_t bit1;
-            // bit1.level0 = 0;
-            // bit1.duration0 = 100;
-            // bit1.level1 = 1;
-            // bit1.duration1 = 300;
-            rmt_items_to_send.push_back({.duration0 = 100, .level0 = 0, .duration1 = 300, .level1 = 1});
+            rmt_item32_t bit1;
+            bit1.level0 = 0;
+            bit1.duration0 = 100;
+            bit1.level1 = 1;
+            bit1.duration1 = 300;
+            rmt_data_to_send.push_back(bit1);
         }
         else
         {
-            // rmt_data_t bit0;
-            // bit0.level0 = 0;
-            // bit0.duration0 = 100;
-            // bit0.level1 = 1;
-            // bit0.duration1 = 100;
-            rmt_items_to_send.push_back({.duration0 = 100, .level0 = 0, .duration1 = 100, .level1 = 1});
+            rmt_item32_t bit0;
+            bit0.level0 = 0;
+            bit0.duration0 = 100;
+            bit0.level1 = 1;
+            bit0.duration1 = 100;
+            rmt_data_to_send.push_back(bit0);
         }
     }
 
     // leadout
-    // rmt_data_t leadout;
-    // leadout.level0 = 0;
-    // leadout.duration0 = 100;
-    // leadout.level1 = 1;
-    // leadout.duration1 = 100;
-    rmt_items_to_send.push_back({.duration0 = 100, .level0 = 0, .duration1 = 100, .level1 = 1});
-
+    rmt_item32_t leadout;
+    leadout.level0 = 0;
+    leadout.duration0 = 100;
+    leadout.level1 = 1;
+    leadout.duration1 = 100;
+    rmt_data_to_send.push_back(leadout);
     // end
-    // rmt_data_t end;
-    // end.level0 = 0;
-    // end.duration0 = 200;
-    // end.level1 = 1;
-    // end.duration1 = 200;
-    rmt_items_to_send.push_back({.duration0 = 200, .level0 = 0, .duration1 = 200, .level1 = 1});
+    rmt_item32_t end;
+    end.level0 = 0;
+    end.duration0 = 200;
+    end.level1 = 1;
+    end.duration1 = 200;
+    rmt_data_to_send.push_back(end);
+    // rmtWrite(rmt, rmt_data_to_send.data(), rmt_data_to_send.size());
+    rmt_write_items(rmt_channel, rmt_data_to_send, rmt_data_to_send.size(), true);
 
-
-    // Senden (blockierend)
-    rmt_channel->write_items(rmt_data_to_send, true);
 }
 
 
