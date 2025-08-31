@@ -109,10 +109,10 @@ static void jhs_recv_task_func(void *arg)
     // attachInterrupt(config_ptr->ac_rx_pin, jhs_ac_rx_isr, FALLING);
     // attachInterrupt(config_ptr->panel_rx_pin, jhs_panel_rx_isr, FALLING);
 
-    config_ptr->ac_rx_pin->setup(esphome::GPIOPinMode::INPUT, esphome::GPIOPullMode::NONE);
-    config_ptr->panel_rx_pin->setup(esphome::GPIOPinMode::INPUT, esphome::GPIOPullMode::PULLDOWN);
-    config_ptr->ac_rx_pin->attach_interrupt(jhs_ac_rx_isr, esphome::GPIOInterruptMode::FALLING);
-    config_ptr->panel_rx_pin->attach_interrupt(jhs_panel_rx_isr, esphome::GPIOInterruptMode::FALLING);
+    config_ptr->ac_rx_pin->pin_mode(gpio::FLAG_INPUT);
+    config_ptr->panel_rx_pin->pin_mode(gpio::FLAG_INPUT | gpio::FLAG_PULLDOWN);
+    config_ptr->ac_rx_pin->attach_interrupt(jhs_ac_rx_isr, gpio::InterruptType::FALLING);
+    config_ptr->panel_rx_pin->attach_interrupt(jhs_panel_rx_isr, gpio::InterruptType::FALLING);
 
 
     // gpio_config_t io_ac_conf = {};
