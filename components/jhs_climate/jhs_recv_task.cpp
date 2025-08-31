@@ -109,8 +109,8 @@ static void jhs_recv_task_func(void *arg)
 
     config_ptr->ac_rx_pin->pin_mode(esphome::gpio::FLAG_INPUT);
     config_ptr->panel_rx_pin->pin_mode(esphome::gpio::FLAG_INPUT | esphome::gpio::FLAG_PULLDOWN);
-    // config_ptr->ac_rx_pin->attach_interrupt(jhs_ac_rx_isr, nullptr, esphome::gpio::INTERRUPT_FALLING_EDGE);
-    // config_ptr->panel_rx_pin->attach_interrupt(jhs_panel_rx_isr, nullptr, esphome::gpio::INTERRUPT_FALLING_EDGE);
+    config_ptr->ac_rx_pin->attach_interrupt(jhs_ac_rx_isr, nullptr, esphome::gpio::INTERRUPT_FALLING_EDGE);
+    config_ptr->panel_rx_pin->attach_interrupt(jhs_panel_rx_isr, nullptr, esphome::gpio::INTERRUPT_FALLING_EDGE);
 
     // auto* ac_rx_input = new esphome::gpio::GPIOInput(config_ptr->ac_rx_pin);
     // ac_rx_input->pin_mode(esphome::gpio::FLAG_INPUT);
@@ -121,19 +121,19 @@ static void jhs_recv_task_func(void *arg)
     // panel_rx_input->attach_interrupt(jhs_panel_rx_isr, nullptr, esphome::gpio::INTERRUPT_FALLING_EDGE);
 
     // Interrupts gehen nur über eigene ISR-Registrierung:
-    gpio_install_isr_service(0);  // nur 1x aufrufen
+    // gpio_install_isr_service(0);  // nur 1x aufrufen
 
-    gpio_isr_handler_add(
-        static_cast<gpio_num_t>(config_ptr->ac_rx_pin->get_pin()),  // echte GPIO-Nummer
-        jhs_ac_rx_isr,
-        (void*) nullptr
-    );
+    // gpio_isr_handler_add(
+    //     static_cast<gpio_num_t>(config_ptr->ac_rx_pin->get_pin()),
+    //     jhs_ac_rx_isr,
+    //     (void*) nullptr
+    // );
 
-    gpio_isr_handler_add(
-        static_cast<gpio_num_t>(config_ptr->panel_rx_pin->get_pin()),
-        jhs_panel_rx_isr,
-        (void*) nullptr
-    );
+    // gpio_isr_handler_add(
+    //     static_cast<gpio_num_t>(config_ptr->panel_rx_pin->get_pin()),
+    //     jhs_panel_rx_isr,
+    //     (void*) nullptr
+    // );
 
 
 
