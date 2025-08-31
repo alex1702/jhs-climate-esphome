@@ -2,8 +2,6 @@
 
 #include "esphome/core/log.h"
 
-#include "jhs_packets.h"
-
 #include "freertos/FreeRTOS.h"
 #include <freertos/task.h>
 #include <freertos/queue.h>
@@ -12,7 +10,7 @@
 
 // namespace JHS {
 
-const size_t JHS_AC_PACKET_SIZE = (sizeof(JHSAcPacket) + 1);
+extern const size_t JHS_AC_PACKET_SIZE; // = (sizeof(JHSAcPacket) + 1);
 const size_t JHS_PANEL_PACKET_SIZE = 3;
 
 extern volatile QueueHandle_t ac_rx_queue;

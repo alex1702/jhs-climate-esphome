@@ -4,9 +4,13 @@
 // #include "driver/gpio.h"
 // #include "esp_log.h"
 
+#include "jhs_packets.h"
+
 // namespace JHS {
 
 static const char *TAG = "JHSClimateRecvTask";
+
+const size_t JHS_AC_PACKET_SIZE = (sizeof(JHSAcPacket) + 1);
 
 // volatile QueueHandle_t ac_rx_queue;
 volatile QueueHandle_t panel_rx_queue;

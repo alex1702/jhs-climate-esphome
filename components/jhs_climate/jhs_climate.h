@@ -2,6 +2,7 @@
 #include "esphome.h"
 //#include "driver/uart.h"
 #include "jhs_packets.h"
+#include "jhs_recv_task.h"
 //#include "esphome/core/component.h"
 // #include "esphome/components/gpio/gpio.h"
 #include "esphome/core/gpio.h"

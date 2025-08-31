@@ -1,7 +1,5 @@
 #include "jhs_climate.h"
 
-#include "jhs_recv_task.h"
-
 static const char *TAG = "JHSClimate";
 
 namespace JHS {
