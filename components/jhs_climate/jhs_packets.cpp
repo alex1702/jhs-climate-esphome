@@ -6,7 +6,7 @@
 
 namespace JHS {
 
-static const char *TAG = "JHSClimate";
+static const char *TAG = "JHSClimatePacket";
 
 static char seven_segment_to_char(uint8_t s7)
 {
