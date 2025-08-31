@@ -2,7 +2,6 @@
 #include "jhs_recv_task.h"
 
 #include "esphome.h"
-#include "esphome/core/wifi_component.h"
 
 #include "esp_timer.h"
 #include "driver/rmt.h"
@@ -186,7 +185,7 @@ void JHSClimate::recv_from_ac()
 
 
         // Modify the packet 
-        packet.wifi = !esphome::wifi::global_wifi_component->is_connected();
+        // packet.wifi = !esphome::wifi::global_wifi_component->is_connected(); // Gibt keine möglichkeit mehr?
         if (is_adjusting()){
             packet.beep_amount = 0;
             packet.beep_length = 0;
