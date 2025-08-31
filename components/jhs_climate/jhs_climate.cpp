@@ -2,6 +2,7 @@
 #include "jhs_recv_task.h"
 
 #include "esphome.h"
+#include "esphome/components/wifi/wifi_component.h"
 
 #include "esp_timer.h"
 #include "driver/rmt.h"
