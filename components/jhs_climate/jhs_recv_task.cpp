@@ -5,6 +5,8 @@
 #include <freertos/task.h>
 #include "esphome/core/gpio.h"
 
+#include "esp_timer.h"
+
 #include "jhs_packets.h"
 
 // namespace JHS {
