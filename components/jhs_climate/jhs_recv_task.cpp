@@ -98,7 +98,7 @@ static void IRAM_ATTR jhs_panel_rx_isr(void* arg)
     // }
 }
 
-static void jhs_recv_task_func()
+static void jhs_recv_task_func(void *arg)
 {
     jhs_recv_task_config *config_ptr = (jhs_recv_task_config *)arg;
 
