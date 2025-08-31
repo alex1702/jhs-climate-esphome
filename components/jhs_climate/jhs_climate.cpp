@@ -95,7 +95,6 @@ void JHSClimate::setup_rmt()
 void JHSClimate::dump_config()
 {
     ESP_LOGCONFIG(TAG, "JHSClimate:");
-    LOG_PIN("  CPU Clock: ", String(esp_clk_cpu_freq() / 1000000) + " MHz");
     LOG_PIN("  AC TX Pin: ", this->ac_tx_pin_);
     LOG_PIN("  AC RX Pin: ", this->ac_rx_pin_);
     LOG_PIN("  Panel TX Pin: ", this->panel_tx_pin_);
