@@ -112,11 +112,11 @@ static void jhs_recv_task_func(void *arg)
     // config_ptr->ac_rx_pin->attach_interrupt(jhs_ac_rx_isr, nullptr, esphome::gpio::INTERRUPT_FALLING_EDGE);
     // config_ptr->panel_rx_pin->attach_interrupt(jhs_panel_rx_isr, nullptr, esphome::gpio::INTERRUPT_FALLING_EDGE);
 
-    auto* ac_rx_input = new gpio::GPIOInput(config_ptr->ac_rx_pin);
+    auto* ac_rx_input = new esphome::gpio::GPIOInput(config_ptr->ac_rx_pin);
     ac_rx_input->pin_mode(esphome::gpio::FLAG_INPUT);
     ac_rx_input->attach_interrupt(jhs_ac_rx_isr, nullptr, esphome::gpio::INTERRUPT_FALLING_EDGE);
 
-    auto* panel_rx_input = new gpio::GPIOInput(config_ptr->panel_rx_pin);
+    auto* panel_rx_input = new esphome::gpio::GPIOInput(config_ptr->panel_rx_pin);
     panel_rx_input->pin_mode(gpio::Flags::INPUT | gpio::Flags::PULLDOWN); // Input + Pulldown
     panel_rx_input->attach_interrupt(jhs_panel_rx_isr, nullptr, gpio::InterruptType::FALLING);
 
