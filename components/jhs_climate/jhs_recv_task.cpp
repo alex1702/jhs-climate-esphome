@@ -21,12 +21,6 @@ static TaskHandle_t interrupt_task;
 // static volatile unsigned int ac_rx_bits_from_start = 0;
 // static volatile uint8_t ac_rx_packet[JHS_AC_PACKET_SIZE];
 
-// static void IRAM_ATTR ac_rx_isr_handler(void *arg) {
-//     int pin = (int)(uintptr_t)arg;   // übergebenen Pin zurückholen
-//     // ⚡ Achtung: hier nur sehr schnelle Aktionen, z. B. Flag setzen oder Queue pushen
-//     ets_printf("Interrupt von Pin %d!\n", pin);
-// }
-
 static void IRAM_ATTR jhs_ac_rx_isr()
 {
     // unsigned long length = micros() - ac_rx_last_falling_edge_time;
@@ -62,6 +56,7 @@ static void IRAM_ATTR jhs_ac_rx_isr()
     //     }
     // }
 }
+
 
 // static volatile unsigned long panel_rx_last_falling_edge_time = 0;
 // static volatile unsigned int panel_rx_bits_from_start = 0;
