@@ -56,7 +56,7 @@ private:
     void setup_rmt();
 
     // void send_rmt_data(rmt_obj_t *rmt, std::vector<uint8_t> data);
-    void send_rmt_data(esphome::rmt::RMTChannel *rmt_channel, const std::vector<uint8_t> &data);
+    void send_rmt_data(RMTChannel *rmt_channel, const std::vector<uint8_t> &data);
 
     void recv_from_panel();
 
