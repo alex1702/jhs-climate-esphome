@@ -3,6 +3,8 @@
 
 #include "esphome.h"
 
+#include "driver/rmt_tx.h"
+
 #include <sstream>
 #include <iomanip>
 #include <vector>
