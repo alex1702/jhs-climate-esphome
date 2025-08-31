@@ -29,9 +29,13 @@ CONF_WATER_FULL_SENSOR = 'water_full_sensor'
 #     }
 # )
 
+CONFIG_SCHEMA = climate.climate_schema(
+    hvac_modes=[]  # oder die Modi, die du unterstützen willst
+)
+
 # später diese schema beschreibung
 # CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend(
-CONFIG_SCHEMA = climate.climate_schema.extend(
+CONFIG_SCHEMA = CONFIG_SCHEMA.extend(
     {
         cv.GenerateID(): cv.declare_id(JHSClimate),
         cv.Required(CONF_AC_TX_PIN): pins.gpio_output_pin_schema,
