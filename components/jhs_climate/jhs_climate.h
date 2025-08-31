@@ -36,8 +36,8 @@ protected:
     // rmt_obj_t *rmt_panel_tx;
     rmt_channel_t rmt_panel_tx;
 
-    float rmt_panel_tx_tick;
-    float rmt_ac_tx_tick;
+    // float rmt_panel_tx_tick;
+    // float rmt_ac_tx_tick;
 
     // uint32_t last_adjustment = 0;
     // const int ADJUSTMENT_INTERVAL = 100;
