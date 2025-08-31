@@ -21,6 +21,9 @@ public:
     //void set_water_full_sensor(esphome::binary_sensor::BinarySensor *water_full_sensor_) { water_full_sensor  = water_full_sensor_; }
 
     void setup() override;
+    // esphome::climate::ClimateTraits traits() override;
+    // void control(const esphome::climate::ClimateCall &call) override;
+    void dump_config() override;
     void loop();
 
 protected:

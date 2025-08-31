@@ -31,6 +31,17 @@ void JHSClimate::setup() {
     ESP_LOGI(TAG, "JHSClimate setup complete");
 }
 
+void JHSClimate::dump_config()
+{
+    ESP_LOGCONFIG(TAG, "JHSClimate:");
+    LOG_PIN("  AC TX Pin: ", this->ac_tx_pin_);
+    LOG_PIN("  AC RX Pin: ", this->ac_rx_pin_);
+    LOG_PIN("  Panel TX Pin: ", this->panel_tx_pin_);
+    LOG_PIN("  Panel RX Pin: ", this->panel_rx_pin_);
+    // ESP_LOGCONFIG(TAG, "  RMT panel tx tick: %f", this->rmt_panel_tx_tick);
+    // ESP_LOGCONFIG(TAG, "  RMT ac tx tick: %f", this->rmt_ac_tx_tick);
+}
+
 
 void JHSClimate::loop() {
     this->recv_from_ac();
@@ -42,7 +53,7 @@ void JHSClimate::recv_from_panel()
     uint8_t packet[JHS_PANEL_PACKET_SIZE];
     while (xQueueReceive(panel_rx_queue, &packet, 0))
     {
-        ESP_LOGI("ISR", "Paket Panel empfangen");
+        ESP_LOGI(TAG, "Paket Panel empfangen");
         std::vector<uint8_t> packet_vector(packet, packet + JHS_PANEL_PACKET_SIZE);
 
         if (memcmp(packet, &KEEPALIVE_PACKET, JHS_PANEL_PACKET_SIZE) == 0)
@@ -103,7 +114,7 @@ void JHSClimate::recv_from_ac()
 
     while (xQueueReceive(ac_rx_queue, &packet, 0))
     {
-        ESP_LOGI("ISR", "Paket AC empfangen");
+        ESP_LOGI(TAG, "Paket AC empfangen");
         std::vector<uint8_t> packet_vector(packet, packet + JHS_AC_PACKET_SIZE);
         esphome::optional<JHSAcPacket> packet_optional = JHSAcPacket::parse(packet_vector);
         if (!packet_optional)
