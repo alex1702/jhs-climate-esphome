@@ -50,21 +50,26 @@ void JHSClimate::setup_rmt()
     // // rmt_panel_tx_->set_clock_divider(80); // z.B. 1 tick = 1 µs bei 80 MHz
     // rmt_panel_tx_->set_clock_divider(200); // 1 Tick = 2,5 µs bei 80 MHz
 
-    rmt_panel_tx = RMT_CHANNEL_0;
+    // rmt_panel_tx = RMT_CHANNEL_0;
 
-    rmt_config_t rmt_panel_tx_config = {};
+    rmt_tx_config_t rmt_panel_tx_config = RMT_TX_CONFIG_DEFAULT();
     rmt_panel_tx_config.channel = rmt_panel_tx;          // RMT-Kanal (0-7 auf ESP32)
     rmt_panel_tx_config.gpio_num = static_cast<gpio_num_t>(this->panel_tx_pin_->get_pin());            // Pin für TX
     rmt_panel_tx_config.clk_div = 200;                     // Teiler für 1 tick = 1µs bei 80MHz APB bei 80; 1 tick = 2,5µs bei 80MHz APB bei 200
     rmt_panel_tx_config.mem_block_num = 3;                // Anzahl Speicherblöcke (1-8) 1 block entspricht 64 Byte und 3 entsprechen den 192 Byte
-    rmt_panel_tx_config.rmt_mode = RMT_MODE_TX;           // TX-Modus
-    rmt_panel_tx_config.tx_config.loop_en = false;        // kein Loop
-    rmt_panel_tx_config.tx_config.carrier_en = false;    // kein IR-Carrier
-    rmt_panel_tx_config.tx_config.idle_output_en = true; // Pin nach Idle high/low
-    rmt_panel_tx_config.tx_config.idle_level = RMT_IDLE_LEVEL_HIGH;
+    rmt_panel_tx_config.loop_count = 0;      // Keine Wiederholung
+    rmt_panel_tx_config.flags.idle_output_en = true;   // Idle auf High
+    rmt_panel_tx_config.flags.idle_level = 1;          // Idle-Level HIGH
+    // rmt_panel_tx_config.rmt_mode = RMT_MODE_TX;           // TX-Modus
+    // rmt_panel_tx_config.tx_config.loop_en = false;        // kein Loop
+    // rmt_panel_tx_config.tx_config.carrier_en = false;    // kein IR-Carrier
+    // rmt_panel_tx_config.tx_config.idle_output_en = true; // Pin nach Idle high/low
+    // rmt_panel_tx_config.tx_config.idle_level = RMT_IDLE_LEVEL_HIGH;
 
-    rmt_config(&rmt_panel_tx_config);
-    rmt_driver_install(rmt_panel_tx_config.channel, 0, 0);
+    rmt_tx_handle_t rmt_panel_tx = nullptr;
+    ESP_ERROR_CHECK(rmt_new_tx(&rmt_panel_tx_config, &rmt_panel_tx));
+    // rmt_config(&rmt_panel_tx_config);
+    // rmt_driver_install(rmt_panel_tx_config.channel, 0, 0);
 
 
 
@@ -363,7 +368,7 @@ void JHSClimate::recv_from_ac()
     }
 }
 
-void send_rmt_data(rmt_channel_t rmt_channel, const std::vector<uint8_t> &data) {
+void send_rmt_data(rmt_tx_handle_t rmt_channel, const std::vector<uint8_t> &data) {
     if (!rmt_channel) return;
 
     ESP_LOGVV(TAG, "Sending RMT data: %s", bytes_to_hex2(data).c_str());

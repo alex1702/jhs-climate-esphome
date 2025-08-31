@@ -34,7 +34,7 @@ protected:
 
     // rmt_obj_t *rmt_ac_tx;
     // rmt_obj_t *rmt_panel_tx;
-    rmt_channel_t rmt_panel_tx;
+    rmt_tx_handle_t rmt_panel_tx;
 
     float rmt_panel_tx_tick;
     float rmt_ac_tx_tick;
@@ -57,7 +57,7 @@ private:
     void setup_rmt();
 
     // void send_rmt_data(rmt_obj_t *rmt, std::vector<uint8_t> data);
-    void send_rmt_data(rmt_channel_t rmt_channel, const std::vector<uint8_t> &data);
+    void send_rmt_data(rmt_tx_handle_t rmt_channel, const std::vector<uint8_t> &data);
 
     void recv_from_panel();
 
