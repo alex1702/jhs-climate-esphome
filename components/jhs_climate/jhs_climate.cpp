@@ -60,7 +60,7 @@ void JHSClimate::setup_rmt()
     rmt_panel_tx_config.clk_div = 200;                     // Teiler für 1 tick = 1µs bei 80MHz APB bei 80; 1 tick = 2,5µs bei 80MHz APB bei 200
     rmt_panel_tx_config.mem_block_num = 3;                // Anzahl Speicherblöcke (1-8) 1 block entspricht 64 Byte; 3 dann 192 Byte
     rmt_panel_tx_config.rmt_mode = RMT_MODE_TX;           // TX-Modus
-    rmt_panel_tx_config.tx_config.loop_en = false;        // kein Loop
+    rmt_panel_tx_config.tx_config.loop_en = true;        // kein Loop
     rmt_panel_tx_config.tx_config.carrier_en = false;    // kein IR-Carrier
     rmt_panel_tx_config.tx_config.idle_output_en = true; // Pin nach Idle high/low
     rmt_panel_tx_config.tx_config.idle_level = RMT_IDLE_LEVEL_HIGH;
