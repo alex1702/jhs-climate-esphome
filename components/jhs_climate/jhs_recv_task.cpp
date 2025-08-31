@@ -3,6 +3,7 @@
 #include <freertos/FreeRTOS.h>
 // #include "driver/gpio.h"
 // #include "esp_log.h"
+#include "esphome/core/gpio.h"
 
 #include "jhs_packets.h"
 
