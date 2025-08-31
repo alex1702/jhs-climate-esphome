@@ -75,7 +75,7 @@ private:
 
     void recv_from_ac();
 
-    void update_screen_if_needed();
+    // void update_screen_if_needed();
 };
 }
 }

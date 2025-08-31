@@ -54,7 +54,6 @@ static void IRAM_ATTR jhs_ac_rx_isr(QueueHandle_t *q)
         {
             ac_rx_bits_from_start = 0;
 
-            // xQueueSend(ac_rx_queue, (void *) ac_rx_packet, 0);
             BaseType_t xHigherPriorityTaskWoken = pdFALSE;
             // panel_rx_packet decayed to pointer; size must match queue item size
             xQueueSendFromISR(*q, (void *)ac_rx_packet, &xHigherPriorityTaskWoken);
@@ -101,7 +100,6 @@ static void IRAM_ATTR jhs_panel_rx_isr(QueueHandle_t *q)
         {
             panel_rx_bits_from_start = 0;
 
-            // xQueueSend(panel_rx_queue, (void *) panel_rx_packet, 0);
             BaseType_t xHigherPriorityTaskWoken = pdFALSE;
             // panel_rx_packet decayed to pointer; size must match queue item size
             xQueueSendFromISR(*q, (void *)panel_rx_packet, &xHigherPriorityTaskWoken);
@@ -114,10 +112,6 @@ static void jhs_recv_task_func(void *arg)
 {
     jhs_recv_task_config *config_ptr = (jhs_recv_task_config *)arg;
 
-    // pinMode(config_ptr->ac_rx_pin, INPUT);
-    // pinMode(config_ptr->panel_rx_pin, INPUT_PULLDOWN);
-    // attachInterrupt(config_ptr->ac_rx_pin, jhs_ac_rx_isr, FALLING);
-    // attachInterrupt(config_ptr->panel_rx_pin, jhs_panel_rx_isr, FALLING);
 
     config_ptr->ac_rx_pin->pin_mode(esphome::gpio::FLAG_INPUT);
     config_ptr->panel_rx_pin->pin_mode(esphome::gpio::FLAG_INPUT | esphome::gpio::FLAG_PULLDOWN);
@@ -136,5 +130,3 @@ void start_jhs_climate_recv_task(jhs_recv_task_config config)
     panel_rx_queue = xQueueCreate(32, JHS_PANEL_PACKET_SIZE);
     xTaskCreatePinnedToCore(jhs_recv_task_func, "jhs_recv_task", 2048, config_ptr, 5, &interrupt_task, 0);
 }
-
-// }

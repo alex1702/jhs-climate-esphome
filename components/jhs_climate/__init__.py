@@ -1,12 +1,12 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-#from esphome.components import climate, binary_sensor
+from esphome.components import climate, binary_sensor
 from esphome.const import CONF_ID
 from esphome import pins
 
-#MULTI_CONF = True
+MULTI_CONF = True
 
-#AUTO_LOAD = [ "binary_sensor", "climate"]
+AUTO_LOAD = [ "binary_sensor", "climate"]
 
 DEPENDENCIES = []
 
@@ -19,41 +19,36 @@ CONF_PANEL_TX_PIN = 'panel_tx_pin'
 CONF_PANEL_RX_PIN = 'panel_rx_pin'
 CONF_WATER_FULL_SENSOR = 'water_full_sensor'
 
-CONFIG_SCHEMA = cv.Schema(
-    {
-        cv.GenerateID(): cv.declare_id(JHSClimate),
-        cv.Required(CONF_AC_TX_PIN): pins.gpio_output_pin_schema,
-        cv.Required(CONF_AC_RX_PIN): pins.gpio_input_pin_schema,
-        cv.Required(CONF_PANEL_TX_PIN): pins.gpio_output_pin_schema,
-        cv.Required(CONF_PANEL_RX_PIN): pins.gpio_input_pin_schema,
-        # cv.Required("panel_tx_pin"): cv.int_,
-        # cv.Required("panel_rx_pin"): cv.int_,
-        # cv.Required("ac_tx_pin"): cv.int_,
-        # cv.Required("ac_rx_pin"): cv.int_,
-    }
-)
-
-# später diese schema beschreibung
-# CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend(
+# CONFIG_SCHEMA = cv.Schema(
 #     {
-#         cv.GenerateID(): cv.declare_id(JHSClimateComponent),
+#         cv.GenerateID(): cv.declare_id(JHSClimate),
 #         cv.Required(CONF_AC_TX_PIN): pins.gpio_output_pin_schema,
 #         cv.Required(CONF_AC_RX_PIN): pins.gpio_input_pin_schema,
 #         cv.Required(CONF_PANEL_TX_PIN): pins.gpio_output_pin_schema,
 #         cv.Required(CONF_PANEL_RX_PIN): pins.gpio_input_pin_schema,
-#         cv.Required(CONF_WATER_FULL_SENSOR): binary_sensor.binary_sensor_schema(),
-        
 #     }
 # )
 
+# später diese schema beschreibung
+CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend(
+    {
+        cv.GenerateID(): cv.declare_id(JHSClimateComponent),
+        cv.Required(CONF_AC_TX_PIN): pins.gpio_output_pin_schema,
+        cv.Required(CONF_AC_RX_PIN): pins.gpio_input_pin_schema,
+        cv.Required(CONF_PANEL_TX_PIN): pins.gpio_output_pin_schema,
+        cv.Required(CONF_PANEL_RX_PIN): pins.gpio_input_pin_schema,
+        cv.Required(CONF_WATER_FULL_SENSOR): binary_sensor.binary_sensor_schema(),
+        
+    }
+)
+
 async def to_code(config):
-    #var = cg.new_Pvariable(config[CONF_ID], config["panel_tx_pin"], config["panel_rx_pin"])
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
-    #await climate.register_climate(var, config)
+    await climate.register_climate(var, config)
     
-    # water_full_sensor = await binary_sensor.new_binary_sensor(config[CONF_WATER_FULL_SENSOR])
-    # cg.add(var.set_water_full_sensor(water_full_sensor))
+    water_full_sensor = await binary_sensor.new_binary_sensor(config[CONF_WATER_FULL_SENSOR])
+    cg.add(var.set_water_full_sensor(water_full_sensor))
 
     ac_tx_pin = await cg.gpio_pin_expression(config[CONF_AC_TX_PIN])
     ac_rx_pin = await cg.gpio_pin_expression(config[CONF_AC_RX_PIN])

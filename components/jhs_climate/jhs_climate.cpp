@@ -3,6 +3,7 @@
 
 #include "esphome.h"
 
+#include "esp_timer.h"
 #include "driver/rmt.h"
 
 #include <sstream>
@@ -46,13 +47,6 @@ void JHSClimate::setup()
 void JHSClimate::setup_rmt()
 {
 
-    // rmt_panel_tx = new RMTChannel();
-    // rmt_panel_tx->setup();
-
-    // rmt_panel_tx_->set_pin(this->panel_tx_pin_->get_pin());
-    // // rmt_panel_tx_->set_clock_divider(80); // z.B. 1 tick = 1 µs bei 80 MHz
-    // rmt_panel_tx_->set_clock_divider(200); // 1 Tick = 2,5 µs bei 80 MHz
-
     this->rmt_panel_tx = RMT_CHANNEL_0;
 
     rmt_config_t rmt_panel_tx_config = {};
@@ -61,7 +55,7 @@ void JHSClimate::setup_rmt()
     rmt_panel_tx_config.clk_div = 200;                     // Teiler für 1 tick = 1µs bei 80MHz APB bei 80; 1 tick = 2,5µs bei 80MHz APB bei 200
     rmt_panel_tx_config.mem_block_num = 3;                // Anzahl Speicherblöcke (1-8) 1 block entspricht 64 Byte; 3 dann 192 Byte
     rmt_panel_tx_config.rmt_mode = RMT_MODE_TX;           // TX-Modus
-    rmt_panel_tx_config.tx_config.loop_en = true;        // kein Loop
+    rmt_panel_tx_config.tx_config.loop_en = false;        // kein Loop
     rmt_panel_tx_config.tx_config.carrier_en = false;    // kein IR-Carrier
     rmt_panel_tx_config.tx_config.idle_output_en = true; // Pin nach Idle high/low
     rmt_panel_tx_config.tx_config.idle_level = RMT_IDLE_LEVEL_HIGH;
@@ -70,25 +64,21 @@ void JHSClimate::setup_rmt()
     rmt_driver_install(rmt_panel_tx_config.channel, 0, 0);
 
 
+    this->rmt_ac_tx = RMT_CHANNEL_1;
 
-    // for (int i = 0; i < 8; i++) {
-    //     RMT.conf_ch[i].conf1.idle_out_en = 1;   // aktivieren
-    //     RMT.conf_ch[i].conf1.idle_out_lv = 1;   // HIGH
-    // }
+    rmt_config_t rmt_ac_tx_config = {};
+    rmt_ac_tx_config.channel = this->rmt_ac_tx;          // RMT-Kanal (0-7 auf ESP32)
+    rmt_ac_tx_config.gpio_num = static_cast<gpio_num_t>(this->ac_tx_pin_->get_pin());            // Pin für TX
+    rmt_ac_tx_config.clk_div = 200;                     // Teiler für 1 tick = 1µs bei 80MHz APB bei 80; 1 tick = 2,5µs bei 80MHz APB bei 200
+    rmt_ac_tx_config.mem_block_num = 3;                // Anzahl Speicherblöcke (1-8) 1 block entspricht 64 Byte; 3 dann 192 Byte
+    rmt_ac_tx_config.rmt_mode = RMT_MODE_TX;           // TX-Modus
+    rmt_ac_tx_config.tx_config.loop_en = false;        // kein Loop
+    rmt_ac_tx_config.tx_config.carrier_en = false;    // kein IR-Carrier
+    rmt_ac_tx_config.tx_config.idle_output_en = true; // Pin nach Idle high/low
+    rmt_ac_tx_config.tx_config.idle_level = RMT_IDLE_LEVEL_HIGH;
 
-    // this->rmt_panel_tx = rmtInit(this->panel_tx_pin_->get_pin(), true, RMT_MEM_192);
-    // this->rmt_panel_tx_tick = rmtSetTick(this->rmt_panel_tx, 2500); // papieska wartość
-    // ESP_LOGI(TAG, "RMT panel tx tick: %f", this->rmt_panel_tx_tick);
-
-    // this->rmt_ac_tx = rmtInit(this->ac_tx_pin_->get_pin(), true, RMT_MEM_192);
-    // this->rmt_ac_tx_tick = rmtSetTick(this->rmt_ac_tx, 2500); // papieska wartość
-    // ESP_LOGI(TAG, "RMT ac tx tick: %f", this->rmt_ac_tx_tick);
-
-    // // ugly hack to set all RMT channels to high on idle
-    // for (int i = 0; i < 8; i++)
-    // {
-    //     RMT.conf_ch[i].conf1.idle_out_lv = 1;
-    // }
+    rmt_config(&rmt_ac_tx_config);
+    rmt_driver_install(rmt_ac_tx_config.channel, 0, 0);
 
     ESP_LOGI(TAG, "RMT initialized");
 }
@@ -160,15 +150,20 @@ void JHSClimate::recv_from_panel()
             hello_packet.power = 0;
             hello_packet.cool = 1;
             hello_packet.set_display("dd");
-            // this->send_rmt_data(this->rmt_panel_tx, hello_packet.to_wire_format());
+            this->send_rmt_data(this->rmt_panel_tx, hello_packet.to_wire_format());
             continue;
         }
         else
         {
             ESP_LOGI(TAG, "Received unknown packet from panel: %s", bytes_to_hex2(packet_vector).c_str());
         }
-        // this->send_rmt_data(this->rmt_ac_tx, packet_vector);
+        this->send_rmt_data(this->rmt_ac_tx, packet_vector);
     }
+}
+
+bool JHSClimate::is_adjusting()
+{
+    return this->steps_left_to_adjust_fan > 0 || this->steps_left_to_adjust_temp > 0 || this->steps_left_to_adjust_mode > 0 || this->adjust_preset;
 }
 
 void JHSClimate::recv_from_ac()
@@ -189,187 +184,186 @@ void JHSClimate::recv_from_ac()
         ESP_LOGVV(TAG, "Received new packet from AC: %s", packet.to_string());
 
 
-        // // Modify the packet 
-        // packet.wifi = !wifi::global_wifi_component->is_connected();
-        // if (is_adjusting()){
-        //     packet.beep_amount = 0;
-        //     packet.beep_length = 0;
-        // }
+        // Modify the packet 
+        packet.wifi = !wifi::global_wifi_component->is_connected();
+        if (is_adjusting()){
+            packet.beep_amount = 0;
+            packet.beep_length = 0;
+        }
 
-        // esphome::climate::ClimateMode mode_from_packet = esphome::climate::CLIMATE_MODE_OFF;
-        // if (packet.cool)
-        // {
-        //     mode_from_packet = esphome::climate::CLIMATE_MODE_COOL;
-        // }
-        // else if (packet.heat)
-        // {
-        //     mode_from_packet = esphome::climate::CLIMATE_MODE_HEAT;
-        // }
-        // else if (packet.fan)
-        // {
-        //     mode_from_packet = esphome::climate::CLIMATE_MODE_FAN_ONLY;
-        // }
-        // else if (packet.dehum)
-        // {
-        //     mode_from_packet = esphome::climate::CLIMATE_MODE_DRY;
-        // }
-        // esphome::climate::ClimateFanMode fan_from_packet = esphome::climate::CLIMATE_FAN_LOW;
-        // if (packet.fan_high)
-        // {
-        //     fan_from_packet = esphome::climate::CLIMATE_FAN_HIGH;
-        // }
-        // if (packet.fan_low)
-        // {
-        //     fan_from_packet = esphome::climate::CLIMATE_FAN_LOW;
-        // }
-        // esphome::climate::ClimatePreset preset_from_packet = esphome::climate::CLIMATE_PRESET_NONE;
-        // if (packet.sleep) preset_from_packet = esphome::climate::CLIMATE_PRESET_SLEEP;
+        esphome::climate::ClimateMode mode_from_packet = esphome::climate::CLIMATE_MODE_OFF;
+        if (packet.cool)
+        {
+            mode_from_packet = esphome::climate::CLIMATE_MODE_COOL;
+        }
+        else if (packet.heat)
+        {
+            mode_from_packet = esphome::climate::CLIMATE_MODE_HEAT;
+        }
+        else if (packet.fan)
+        {
+            mode_from_packet = esphome::climate::CLIMATE_MODE_FAN_ONLY;
+        }
+        else if (packet.dehum)
+        {
+            mode_from_packet = esphome::climate::CLIMATE_MODE_DRY;
+        }
+        esphome::climate::ClimateFanMode fan_from_packet = esphome::climate::CLIMATE_FAN_LOW;
+        if (packet.fan_high)
+        {
+            fan_from_packet = esphome::climate::CLIMATE_FAN_HIGH;
+        }
+        if (packet.fan_low)
+        {
+            fan_from_packet = esphome::climate::CLIMATE_FAN_LOW;
+        }
+        esphome::climate::ClimatePreset preset_from_packet = esphome::climate::CLIMATE_PRESET_NONE;
+        if (packet.sleep) preset_from_packet = esphome::climate::CLIMATE_PRESET_SLEEP;
 
-        // if (!this->is_adjusting())
-        // {
-        //     // if we are not adjusting anything we can copy the state from the packet to the climate
+        if (!this->is_adjusting())
+        {
+            // if we are not adjusting anything we can copy the state from the packet to the climate
 
-        //     bool did_change = false;
-        //     if (packet.get_temp() > 0 && this->target_temperature != packet.get_temp() && packet.cool)
-        //     {
-        //         this->target_temperature = packet.get_temp();
-        //         did_change = true;
-        //     }
-        //     if (this->current_temperature != packet.get_temp())
-        //     {
-        //         this->current_temperature = packet.get_temp(); // Fake the current temperature
-        //         did_change = true;
-        //     }
-        //     if (this->mode != mode_from_packet)
-        //     {
-        //         this->mode = mode_from_packet;
-        //         did_change = true;
-        //     }
-        //     if (this->fan_mode != fan_from_packet)
-        //     {
-        //         this->fan_mode = fan_from_packet;
-        //         did_change = true;
-        //     }
-        //     if (this->preset != preset_from_packet)
-        //     {
-        //         this->preset = preset_from_packet;
-        //         did_change = true;
-        //     }
+            bool did_change = false;
+            if (packet.get_temp() > 0 && this->target_temperature != packet.get_temp() && packet.cool)
+            {
+                this->target_temperature = packet.get_temp();
+                did_change = true;
+            }
+            if (this->current_temperature != packet.get_temp())
+            {
+                this->current_temperature = packet.get_temp(); // Fake the current temperature
+                did_change = true;
+            }
+            if (this->mode != mode_from_packet)
+            {
+                this->mode = mode_from_packet;
+                did_change = true;
+            }
+            if (this->fan_mode != fan_from_packet)
+            {
+                this->fan_mode = fan_from_packet;
+                did_change = true;
+            }
+            if (this->preset != preset_from_packet)
+            {
+                this->preset = preset_from_packet;
+                did_change = true;
+            }
             
-        //     if (did_change)
-        //     {
-        //         this->publish_state();
-        //     }
-        //     if (this->water_full != packet.water_full)
-        //     {
-        //         if (packet.water_full){
-        //             last_water_full = esphome::millis();
-        //             this->water_full = true;
-        //         }else{
-        //             if (esphome::millis() - last_water_full > WATER_FULL_INTERVAL){
-        //                 this->water_full = false;
-        //             }else{
-        //                 this->water_full = true;
-        //             }
-        //             last_water_full = esphome::millis();
-        //         }
-        //         this->water_full_sensor->publish_state(this->water_full);
-        //     }
-        // }
-        // else
-        // {
-        //     if (esphome::millis() - last_adjustment < ADJUSTMENT_INTERVAL)
-        //     {
-        //         continue;
-        //     }
-        //     last_adjustment = esphome::millis();
-        //     // we are adjusting
-        //     if (this->steps_left_to_adjust_temp > 0)
-        //     {
-        //         if (this->target_temperature != packet.get_temp())
-        //         {
-        //             auto packet_to_send = BUTTON_LOWER_TEMP;
-        //             if (this->target_temperature > packet.get_temp())
-        //             {
-        //                 packet_to_send = BUTTON_HIGHER_TEMP;
-        //                 ESP_LOGD(TAG, "Sending BUTTON_HIGHER_TEMP packet to AC");
-        //             }
-        //             else
-        //             {
-        //                 ESP_LOGD(TAG, "Sending BUTTON_LOWER_TEMP packet to AC");
-        //             }
-        //             // create a vector from BUTTON_UP, which is an std::array
-        //             std::vector<uint8_t> packet_vector(packet_to_send.begin(), packet_to_send.end());
+            if (did_change)
+            {
+                this->publish_state();
+            }
+            if (this->water_full != packet.water_full)
+            {
+                if (packet.water_full){
+                    last_water_full = (uint32_t)(esp_timer_get_time());
+                    this->water_full = true;
+                }else{
+                    if ((uint32_t)(esp_timer_get_time()) - last_water_full > WATER_FULL_INTERVAL){
+                        this->water_full = false;
+                    }else{
+                        this->water_full = true;
+                    }
+                    last_water_full = (uint32_t)(esp_timer_get_time());
+                }
+                this->water_full_sensor->publish_state(this->water_full);
+            }
+        }
+        else
+        {
+            if ((uint32_t)(esp_timer_get_time()) - last_adjustment < ADJUSTMENT_INTERVAL)
+            {
+                continue;
+            }
+            last_adjustment = (uint32_t)(esp_timer_get_time());
+            // we are adjusting
+            if (this->steps_left_to_adjust_temp > 0)
+            {
+                if (this->target_temperature != packet.get_temp())
+                {
+                    auto packet_to_send = BUTTON_LOWER_TEMP;
+                    if (this->target_temperature > packet.get_temp())
+                    {
+                        packet_to_send = BUTTON_HIGHER_TEMP;
+                        ESP_LOGD(TAG, "Sending BUTTON_HIGHER_TEMP packet to AC");
+                    }
+                    else
+                    {
+                        ESP_LOGD(TAG, "Sending BUTTON_LOWER_TEMP packet to AC");
+                    }
+                    // create a vector from BUTTON_UP, which is an std::array
+                    std::vector<uint8_t> packet_vector(packet_to_send.begin(), packet_to_send.end());
 
-        //             this->send_rmt_data(this->rmt_ac_tx, packet_vector);
-        //             this->steps_left_to_adjust_temp--;
-        //         }
-        //         else
-        //         {
-        //             this->steps_left_to_adjust_temp = 0;
-        //         }
-        //     }
-        //     if (this->steps_left_to_adjust_fan > 0)
-        //     {
-        //         if (this->fan_mode != fan_from_packet)
-        //         {
-        //             auto packet_to_send = BUTTON_FAN;
+                    this->send_rmt_data(this->rmt_ac_tx, packet_vector);
+                    this->steps_left_to_adjust_temp--;
+                }
+                else
+                {
+                    this->steps_left_to_adjust_temp = 0;
+                }
+            }
+            if (this->steps_left_to_adjust_fan > 0)
+            {
+                if (this->fan_mode != fan_from_packet)
+                {
+                    auto packet_to_send = BUTTON_FAN;
 
-        //             // create a vector from BUTTON_FAN, which is an std::array
-        //             std::vector<uint8_t> packet_vector(packet_to_send.begin(), packet_to_send.end());
-        //             ESP_LOGD(TAG, "Sending BUTTON_FAN packet to AC");
-        //             this->send_rmt_data(this->rmt_ac_tx, packet_vector);
-        //             this->steps_left_to_adjust_fan--;
-        //         }
-        //         else
-        //         {
-        //             this->steps_left_to_adjust_fan = 0;
-        //         }
-        //     }
-        //     if (this->preset != preset_from_packet)
-        //     {
-        //         auto packet_to_send = BUTTON_SLEEP;
-        //         // create a vector from BUTTON_SLEEP, which is an std::array
-        //         std::vector<uint8_t> packet_vector(packet_to_send.begin(), packet_to_send.end());
-        //         ESP_LOGD(TAG, "Sending BUTTON_SLEEP packet to AC");
-        //         this->send_rmt_data(this->rmt_ac_tx, packet_vector);
-        //         this->adjust_preset = false;
-        //     }
-        //     if (this->steps_left_to_adjust_mode > 0)
-        //     {
-        //         if (this->mode != mode_from_packet)
-        //         {
-        //             auto packet_to_send = BUTTON_MODE;
-        //             if (this->mode == esphome::climate::ClimateMode::CLIMATE_MODE_OFF || mode_from_packet == esphome::climate::CLIMATE_MODE_OFF)
-        //             {
-        //                 packet_to_send = BUTTON_ON;
-        //                 ESP_LOGD(TAG, "Sending BUTTON_ON packet to AC");
-        //             }
-        //             else
-        //             {
-        //                 ESP_LOGD(TAG, "Sending BUTTON_MODE packet to AC");
-        //             }
-        //             // create a vector from BUTTON_MODE, which is an std::array
-        //             std::vector<uint8_t> packet_vector(packet_to_send.begin(), packet_to_send.end());
+                    // create a vector from BUTTON_FAN, which is an std::array
+                    std::vector<uint8_t> packet_vector(packet_to_send.begin(), packet_to_send.end());
+                    ESP_LOGD(TAG, "Sending BUTTON_FAN packet to AC");
+                    this->send_rmt_data(this->rmt_ac_tx, packet_vector);
+                    this->steps_left_to_adjust_fan--;
+                }
+                else
+                {
+                    this->steps_left_to_adjust_fan = 0;
+                }
+            }
+            if (this->preset != preset_from_packet)
+            {
+                auto packet_to_send = BUTTON_SLEEP;
+                // create a vector from BUTTON_SLEEP, which is an std::array
+                std::vector<uint8_t> packet_vector(packet_to_send.begin(), packet_to_send.end());
+                ESP_LOGD(TAG, "Sending BUTTON_SLEEP packet to AC");
+                this->send_rmt_data(this->rmt_ac_tx, packet_vector);
+                this->adjust_preset = false;
+            }
+            if (this->steps_left_to_adjust_mode > 0)
+            {
+                if (this->mode != mode_from_packet)
+                {
+                    auto packet_to_send = BUTTON_MODE;
+                    if (this->mode == esphome::climate::ClimateMode::CLIMATE_MODE_OFF || mode_from_packet == esphome::climate::CLIMATE_MODE_OFF)
+                    {
+                        packet_to_send = BUTTON_ON;
+                        ESP_LOGD(TAG, "Sending BUTTON_ON packet to AC");
+                    }
+                    else
+                    {
+                        ESP_LOGD(TAG, "Sending BUTTON_MODE packet to AC");
+                    }
+                    // create a vector from BUTTON_MODE, which is an std::array
+                    std::vector<uint8_t> packet_vector(packet_to_send.begin(), packet_to_send.end());
 
-        //             this->send_rmt_data(this->rmt_ac_tx, packet_vector);
-        //             this->steps_left_to_adjust_mode--;
-        //         }
-        //         else
-        //         {
-        //             this->steps_left_to_adjust_mode = 0;
-        //         }
-        //     }
+                    this->send_rmt_data(this->rmt_ac_tx, packet_vector);
+                    this->steps_left_to_adjust_mode--;
+                }
+                else
+                {
+                    this->steps_left_to_adjust_mode = 0;
+                }
+            }
 
-        // }
-        // this->send_rmt_data(this->rmt_panel_tx, packet.to_wire_format());
+        }
+        this->send_rmt_data(this->rmt_panel_tx, packet.to_wire_format());
     }
 }
 
 void JHSClimate::send_rmt_data(rmt_channel_t rmt_channel, const std::vector<uint8_t> &data) {
 
-    // ESP_LOGVV(TAG, "Sending RMT data: %s", bytes_to_hex2(data).c_str());
-    ESP_LOGI(TAG, "Sending RMT data: %s", bytes_to_hex2(data).c_str());
+    ESP_LOGVV(TAG, "Sending RMT data: %s", bytes_to_hex2(data).c_str());
 
 
 
