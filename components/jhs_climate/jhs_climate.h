@@ -3,7 +3,7 @@
 #include "jhs_packets.h"
 #include "esphome/core/gpio.h"
 
-#include "esphome/components/rmt/rmt_output.h"
+#include "esphome/core/rmt_channel.hpp"
 
 namespace JHS {
 
