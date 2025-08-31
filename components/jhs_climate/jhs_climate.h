@@ -3,7 +3,7 @@
 #include "jhs_packets.h"
 #include "esphome/core/gpio.h"
 
-#include "driver/rmt.h"
+#include "driver/rmt_tx.h"
 
 namespace JHS {
 
