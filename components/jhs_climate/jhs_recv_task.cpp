@@ -65,6 +65,7 @@ static volatile uint8_t panel_rx_packet[JHS_PANEL_PACKET_SIZE];
 
 static void IRAM_ATTR jhs_panel_rx_isr(QueueHandle_t *q)//(void* arg)
 {
+    ESP_EARLY_LOGI("ISR", "Interrupt fired!");
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     // panel_rx_packet decayed to pointer; size must match queue item size
     xQueueSendFromISR(*q, (void *)panel_rx_packet, &xHigherPriorityTaskWoken);
