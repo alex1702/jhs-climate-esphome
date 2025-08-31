@@ -10,6 +10,7 @@
 
 // namespace JHS {
 
+const size_t BLABLATEST = 3;
 extern const size_t JHS_AC_PACKET_SIZE; // = (sizeof(JHSAcPacket) + 1);
 const size_t JHS_PANEL_PACKET_SIZE = 3;
 
