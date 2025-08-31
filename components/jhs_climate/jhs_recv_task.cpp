@@ -104,10 +104,16 @@ static void jhs_recv_task_func(void *arg)
 {
     jhs_recv_task_config *config_ptr = (jhs_recv_task_config *)arg;
 
-    pinMode(config_ptr->ac_rx_pin, INPUT);
-    pinMode(config_ptr->panel_rx_pin, INPUT_PULLDOWN);
-    attachInterrupt(config_ptr->ac_rx_pin, jhs_ac_rx_isr, FALLING);
-    attachInterrupt(config_ptr->panel_rx_pin, jhs_panel_rx_isr, FALLING);
+    // pinMode(config_ptr->ac_rx_pin, INPUT);
+    // pinMode(config_ptr->panel_rx_pin, INPUT_PULLDOWN);
+    // attachInterrupt(config_ptr->ac_rx_pin, jhs_ac_rx_isr, FALLING);
+    // attachInterrupt(config_ptr->panel_rx_pin, jhs_panel_rx_isr, FALLING);
+
+    config_ptr->ac_rx_pin->setup(esphome::GPIOPinMode::INPUT, esphome::GPIOPullMode::NONE);
+    config_ptr->panel_rx_pin->setup(esphome::GPIOPinMode::INPUT, esphome::GPIOPullMode::PULLDOWN);
+    ac_rx_pin->attach_interrupt(jhs_ac_rx_isr, esphome::GPIOInterruptMode::FALLING);
+    panel_rx_pin->attach_interrupt(jhs_panel_rx_isr, esphome::GPIOInterruptMode::FALLING);
+
 
     // gpio_config_t io_ac_conf = {};
     // io_ac_conf.intr_type = GPIO_INTR_NEGEDGE;     // Interrupt auf FALLING

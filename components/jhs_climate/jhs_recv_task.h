@@ -20,8 +20,8 @@ extern volatile QueueHandle_t panel_rx_queue;
 
 struct jhs_recv_task_config
 {
-    esphome::InternalGPIOPin ac_rx_pin;
-    esphome::InternalGPIOPin panel_rx_pin;
+    esphome::InternalGPIOPin *ac_rx_pin;
+    esphome::InternalGPIOPin *panel_rx_pin;
 };
 
 void start_jhs_climate_recv_task(jhs_recv_task_config config);
