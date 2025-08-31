@@ -418,8 +418,7 @@ void send_rmt_data(rmt_channel_t rmt_channel, const std::vector<uint8_t> &data) 
     end.level1 = 1;
     end.duration1 = 200;
     rmt_data_to_send.push_back(end);
-    // rmtWrite(rmt, rmt_data_to_send.data(), rmt_data_to_send.size());
-    rmt_write_items(rmt_channel, rmt_data_to_send, rmt_data_to_send.size(), true);
+    rmt_write_items(rmt_channel, rmt_data_to_send.data(), rmt_data_to_send.size(), true);
 
 }
 
