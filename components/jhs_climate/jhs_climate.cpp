@@ -36,8 +36,8 @@ void JHSClimate::setup()
 
     // send hello packet to panel
     JHSAcPacket hello_packet;
-    hello_packet.beep_amount = 3;
-    hello_packet.beep_length = 1;
+    // hello_packet.beep_amount = 3;
+    // hello_packet.beep_length = 1;
     hello_packet.set_display("dd");
     ESP_LOGI(TAG, "Hello packet ans Display schicken...");
     this->send_rmt_data(this->rmt_panel_tx, hello_packet.to_wire_format());
