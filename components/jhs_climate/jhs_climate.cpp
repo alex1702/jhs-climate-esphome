@@ -55,7 +55,7 @@ void JHSClimate::setup_rmt()
     // rmt_panel_tx = RMT_CHANNEL_0;
 
     rmt_tx_config_t rmt_panel_tx_config = RMT_TX_CONFIG_DEFAULT();
-    rmt_panel_tx_config.channel = rmt_panel_tx;          // RMT-Kanal (0-7 auf ESP32)
+    rmt_panel_tx_config.channel = RMT_CHANNEL_0;          // RMT-Kanal (0-7 auf ESP32)
     rmt_panel_tx_config.gpio_num = static_cast<gpio_num_t>(this->panel_tx_pin_->get_pin());            // Pin für TX
     rmt_panel_tx_config.clk_div = 200;                     // Teiler für 1 tick = 1µs bei 80MHz APB bei 80; 1 tick = 2,5µs bei 80MHz APB bei 200
     rmt_panel_tx_config.mem_block_num = 3;                // Anzahl Speicherblöcke (1-8) 1 block entspricht 64 Byte und 3 entsprechen den 192 Byte
