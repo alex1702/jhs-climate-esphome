@@ -140,17 +140,6 @@ std::string JHSAcPacket::to_string() const {
     {
         ss << " BEEP " << (int)this->beep_amount << " times, " << (int)this->beep_length;
     }
-    // if (power) ss << " POWER";
-    // if (cool) ss << " COOL";
-    // if (heat) ss << " HEAT";
-    // if (fan) ss << " FAN";
-    // if (dehum) ss << " DEHUM";
-    // if (sleep) ss << " SLEEP";
-    // if (water_full) ss << " WATERFULL";
-    // if (timer) ss << " TIMER";
-    // if (beep_amount > 0 && beep_length > 0) {
-    //     ss << " BEEP " << (int)beep_amount << "x " << (int)beep_length;
-    // }
     return ss.str();
 }
 
