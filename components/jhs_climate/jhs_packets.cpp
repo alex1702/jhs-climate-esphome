@@ -168,26 +168,28 @@ void JHSAcPacket::set_display(std::string temp)
     second_digit = char_to_seven_segment(temp[1]);
 }
 
+
 // Einfacher Parser: kopiert die Daten in die Struktur
-JHSAcPacket JHSAcPacket::parse(const std::vector<uint8_t> &data) {
-  JHSAcPacket pkt;
-  if (data.size() < sizeof(JHSAcPacket) + 1) {
-    ESP_LOGW(TAG, "Packet too short (%d bytes)", (int)data.size());
-    return pkt;
-  }
-  std::memcpy(&pkt, data.data(), sizeof(JHSAcPacket));
-  uint8_t checksum = data.back();
+// JHSAcPacket JHSAcPacket::parse(const std::vector<uint8_t> &data) {
+esphome::optional<JHSAcPacket> JHSAcPacket::parse(const std::vector<uint8_t> &data)
+{
+    
+    if (data.size() != sizeof(JHSAcPacket) + 1) {
+        ESP_LOGE(TAG, "Invalid packet size: %d, should be %d", data.size(), sizeof(JHSAcPacket) + 1);
+        return esphome::optional<JHSAcPacket>();
+    }
+    JHSAcPacket pkt;
+    std::memcpy(&pkt, data.data(), sizeof(JHSAcPacket));
+    uint8_t checksum = data.back();
     uint8_t checksum_calculated = 90;
-    for (size_t i = 0; i < data.size() - 1; i++)
-    {
+    for (size_t i = 0; i < data.size() - 1; i++) {
         checksum_calculated += data[i];
     }
-    if (checksum != checksum_calculated)
-    {
+    if (checksum != checksum_calculated) {
         ESP_LOGV(TAG, "JHS AC packet checksum mismatch: %d != %d in packet: %s", checksum, checksum_calculated, bytes_to_hex(data).c_str());
-        // return esphome::optional<JHSAcPacket>();
+        return esphome::optional<JHSAcPacket>();
     }
-  return pkt;
+    return pkt;
 }
 
 std::vector<uint8_t> JHSAcPacket::to_wire_format()

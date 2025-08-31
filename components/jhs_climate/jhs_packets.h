@@ -7,7 +7,6 @@
 
 #include "esphome/core/optional.h"
 
-// namespace JHS {
 
 const std::array<uint8_t, 3> KEEPALIVE_PACKET{0x30, 0x00, 0x8a};
 const std::array<uint8_t, 3> BUTTON_MODE{0x30, 0x01, 0x8b};
@@ -59,9 +58,9 @@ struct JHSAcPacket {
     int get_temp();
     void set_display(std::string);
 
-    static JHSAcPacket parse(const std::vector<uint8_t> &data);
+    // static JHSAcPacket parse(const std::vector<uint8_t> &data);
+    static esphome::optional<JHSAcPacket> parse(const std::vector<uint8_t> &data);
 
     std::vector<uint8_t> to_wire_format();
 } __attribute__((packed));
 
-// }  // namespace JHS
