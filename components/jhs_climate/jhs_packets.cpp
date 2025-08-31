@@ -4,7 +4,7 @@
 #include <sstream>
 #include <iomanip>
 
-namespace JHS {
+// namespace JHS {
 
 static const char *TAG = "JHSClimatePacket";
 
@@ -204,4 +204,4 @@ std::vector<uint8_t> JHSAcPacket::to_wire_format()
     return data;
 }
 
-}  // namespace JHS
+// }  // namespace JHS

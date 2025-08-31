@@ -4,7 +4,7 @@
 // #include "driver/gpio.h"
 // #include "esp_log.h"
 
-namespace JHS {
+// namespace JHS {
 
 static const char *TAG = "JHSClimateRecvTask";
 
@@ -160,4 +160,4 @@ void start_jhs_climate_recv_task(jhs_recv_task_config config)
     xTaskCreatePinnedToCore(jhs_recv_task_func, "jhs_recv_task", 2048, config_ptr, 5, &interrupt_task, 0);
 }
 
-}
+// }

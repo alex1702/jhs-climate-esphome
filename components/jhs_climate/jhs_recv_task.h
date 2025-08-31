@@ -10,7 +10,7 @@
 
 #include "esphome/core/gpio.h"
 
-namespace JHS {
+// namespace JHS {
 
 const size_t JHS_AC_PACKET_SIZE = (sizeof(JHSAcPacket) + 1);
 const size_t JHS_PANEL_PACKET_SIZE = 3;
@@ -26,4 +26,4 @@ struct jhs_recv_task_config
 
 void start_jhs_climate_recv_task(jhs_recv_task_config config);
 
-}
+// }
