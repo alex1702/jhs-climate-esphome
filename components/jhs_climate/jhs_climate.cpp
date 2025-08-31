@@ -363,7 +363,7 @@ void JHSClimate::recv_from_ac()
     }
 }
 
-void send_rmt_data(RMTChannel rmt_channel, const std::vector<uint8_t> &data) {
+void send_rmt_data(rmt_channel_t rmt_channel, const std::vector<uint8_t> &data) {
     if (!rmt_channel) return;
 
     ESP_LOGVV(TAG, "Sending RMT data: %s", bytes_to_hex2(data).c_str());
