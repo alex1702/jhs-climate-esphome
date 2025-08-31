@@ -2,14 +2,22 @@
 
 #include "jhs_recv_task.h"
 
+#include <sstream>
 #include <vector>
 
 static const char *TAG = "JHSClimate";
 
 namespace JHS {
 
-// JHSClimate::JHSClimate(int panel_tx_pin, int panel_rx_pin, int ac_tx_pin, int ac_rx_pin, uart_port_t uart_num)
-//     : tx_pin_(panel_tx_pin), rx_pin_(panel_rx_pin), uart_num_(uart_num) {}
+static std::string bytes_to_hex2(std::vector<uint8_t> bytes)
+{
+    std::stringstream ss;
+    for (auto b : bytes)
+    {
+        ss << std::hex << std::setfill('0') << std::setw(2) << (int)b;
+    }
+    return ss.str();
+}
 
 void JHSClimate::setup() {
 
