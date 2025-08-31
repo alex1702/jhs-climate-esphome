@@ -124,13 +124,13 @@ static void jhs_recv_task_func(void *arg)
     gpio_install_isr_service(0);  // nur 1x aufrufen
 
     gpio_isr_handler_add(
-        config_ptr->ac_rx_pin->get_pin(),  // echte GPIO-Nummer
+        static_cast<gpio_num_t>(config_ptr->ac_rx_pin->get_pin()),  // echte GPIO-Nummer
         jhs_ac_rx_isr,
         (void*) nullptr
     );
 
     gpio_isr_handler_add(
-        config_ptr->panel_rx_pin->get_pin(),
+        static_cast<gpio_num_t>(config_ptr->panel_rx_pin->get_pin()),
         jhs_panel_rx_isr,
         (void*) nullptr
     );
