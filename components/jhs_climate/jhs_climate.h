@@ -3,7 +3,6 @@
 #include "jhs_packets.h"
 #include "esphome/core/gpio.h"
 
-#include "esphome/core/rmt_channel.hpp"
 
 namespace JHS {
 
@@ -34,7 +33,7 @@ protected:
 
     // rmt_obj_t *rmt_ac_tx;
     // rmt_obj_t *rmt_panel_tx;
-    esphome::rmt::RMTChannel *rmt_panel_tx;
+    RMTChannel *rmt_panel_tx;
 
     float rmt_panel_tx_tick;
     float rmt_ac_tx_tick;

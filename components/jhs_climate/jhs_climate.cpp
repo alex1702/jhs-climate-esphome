@@ -1,8 +1,8 @@
 #include "jhs_climate.h"
-
 #include "jhs_recv_task.h"
 
 #include "driver/rmt_struct.h"
+#include "esphome.h"
 
 #include <sstream>
 #include <iomanip>
@@ -44,7 +44,7 @@ void JHSClimate::setup()
 void JHSClimate::setup_rmt()
 {
 
-    rmt_panel_tx = new esphome::rmt::RMTChannel();
+    rmt_panel_tx = new RMTChannel();
     rmt_panel_tx->setup();
 
     rmt_panel_tx_->set_pin(this->panel_tx_pin_->get_pin());
