@@ -59,50 +59,50 @@ static void IRAM_ATTR jhs_ac_rx_isr(void* arg)
 }
 
 
-// static volatile unsigned long panel_rx_last_falling_edge_time = 0;
-// static volatile unsigned int panel_rx_bits_from_start = 0;
+static volatile unsigned long panel_rx_last_falling_edge_time = 0;
+static volatile unsigned int panel_rx_bits_from_start = 0;
 static volatile uint8_t panel_rx_packet[JHS_PANEL_PACKET_SIZE];
 
 static void IRAM_ATTR jhs_panel_rx_isr(QueueHandle_t *q)//(void* arg)
 {
-    ESP_EARLY_LOGI("ISR", "Interrupt fired!");
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    // panel_rx_packet decayed to pointer; size must match queue item size
-    xQueueSendFromISR(*q, (void *)panel_rx_packet, &xHigherPriorityTaskWoken);
-    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-    // xQueueSend(panel_rx_queue, (void *) panel_rx_packet, 0);
-    // unsigned long length = micros() - panel_rx_last_falling_edge_time;
-    // panel_rx_last_falling_edge_time = micros();
-    // if (length > 20 && length < 32 * 250)
-    // {
-    //     if (length < 2 * 250 + 280)
-    //     {
-    //         // zero
-    //         panel_rx_bits_from_start++;
-    //     }
-    //     else if (length < 4 * 250 + 250)
-    //     {
-    //         // set bit in packet to one
-    //         panel_rx_packet[panel_rx_bits_from_start / 8] |= (1 << (7 - panel_rx_bits_from_start % 8));
-    //         panel_rx_bits_from_start++;
-    //     }
-    //     else
-    //     {
-    //         // start
-    //         panel_rx_bits_from_start = 0;
-    //         // clear packet
-    //         for (int i = 0; i < JHS_PANEL_PACKET_SIZE; i++)
-    //         {
-    //             panel_rx_packet[i] = 0;
-    //         }
-    //     }
-    //     if (panel_rx_bits_from_start == JHS_PANEL_PACKET_SIZE * 8)
-    //     {
-    //         panel_rx_bits_from_start = 0;
+    
 
-    //         xQueueSend(panel_rx_queue, (void *) panel_rx_packet, 0);
-    //     }
-    // }
+    unsigned long length = (unsigned long)(esp_timer_get_time()) - panel_rx_last_falling_edge_time;
+    panel_rx_last_falling_edge_time = (unsigned long)(esp_timer_get_time());
+    if (length > 20 && length < 32 * 250)
+    {
+        if (length < 2 * 250 + 280)
+        {
+            // zero
+            panel_rx_bits_from_start++;
+        }
+        else if (length < 4 * 250 + 250)
+        {
+            // set bit in packet to one
+            panel_rx_packet[panel_rx_bits_from_start / 8] |= (1 << (7 - panel_rx_bits_from_start % 8));
+            panel_rx_bits_from_start++;
+        }
+        else
+        {
+            // start
+            panel_rx_bits_from_start = 0;
+            // clear packet
+            for (int i = 0; i < JHS_PANEL_PACKET_SIZE; i++)
+            {
+                panel_rx_packet[i] = 0;
+            }
+        }
+        if (panel_rx_bits_from_start == JHS_PANEL_PACKET_SIZE * 8)
+        {
+            panel_rx_bits_from_start = 0;
+
+            // xQueueSend(panel_rx_queue, (void *) panel_rx_packet, 0);
+            BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+            // panel_rx_packet decayed to pointer; size must match queue item size
+            xQueueSendFromISR(*q, (void *)panel_rx_packet, &xHigherPriorityTaskWoken);
+            portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+        }
+    }
 }
 
 static void jhs_recv_task_func(void *arg)
