@@ -12,6 +12,8 @@
 
 static const char *TAG = "JHSClimate";
 
+namespace esphome {
+
 namespace JHS {
 
 static std::string bytes_to_hex2(std::vector<uint8_t> bytes)
@@ -37,10 +39,9 @@ void JHSClimate::setup()
 
     // send hello packet to panel
     JHSAcPacket hello_packet;
-    // hello_packet.beep_amount = 3;
-    // hello_packet.beep_length = 1;
+    hello_packet.beep_amount = 3;
+    hello_packet.beep_length = 1;
     hello_packet.set_display("dd");
-    ESP_LOGI(TAG, "Hello packet ans Display schicken...");
     this->send_rmt_data(this->rmt_panel_tx, hello_packet.to_wire_format());
 }
 
@@ -230,6 +231,7 @@ void JHSClimate::recv_from_ac()
 
         // Modify the packet 
         // packet.wifi = !esphome::wifi::global_wifi_component->is_connected(); // Gibt keine möglichkeit mehr?
+        packet.wifi = 0;
         if (is_adjusting()){
             packet.beep_amount = 0;
             packet.beep_length = 0;
@@ -465,3 +467,5 @@ void JHSClimate::send_rmt_data(rmt_channel_t rmt_channel, const std::vector<uint
 
 
 }  // namespace JHS
+
+}  // namespace esphome

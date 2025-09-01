@@ -111,7 +111,6 @@ std::string bytes_to_hex(std::vector<uint8_t> bytes)
 // Hilfsfunktion: Paket in lesbare String-Darstellung
 std::string JHSAcPacket::to_string() const {
     std::stringstream ss;
-    // ss << "DISP:" << (int)first_digit << (int)second_digit;
     ss << "DISP:";
     ss << seven_segment_to_char(first_digit);
     ss << seven_segment_to_char(second_digit);
@@ -169,7 +168,6 @@ void JHSAcPacket::set_display(std::string temp)
 
 
 // Einfacher Parser: kopiert die Daten in die Struktur
-// JHSAcPacket JHSAcPacket::parse(const std::vector<uint8_t> &data) {
 esphome::optional<JHSAcPacket> JHSAcPacket::parse(const std::vector<uint8_t> &data)
 {
     
