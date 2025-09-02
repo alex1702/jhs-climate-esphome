@@ -53,18 +53,18 @@ CONFIG_SCHEMA = cv.All(
 #         cv.Required(CONF_WATER_FULL_SENSOR): binary_sensor.binary_sensor_schema(),
 #     }
 # )
-CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend(
-# CONFIG_SCHEMA = CONFIG_SCHEMA.extend(
-    {
-        cv.GenerateID(): cv.declare_id(JHSClimate),
-        cv.Required(CONF_AC_TX_PIN): pins.gpio_output_pin_schema,
-        cv.Required(CONF_AC_RX_PIN): pins.gpio_input_pin_schema,
-        cv.Required(CONF_PANEL_TX_PIN): pins.gpio_output_pin_schema,
-        cv.Required(CONF_PANEL_RX_PIN): pins.gpio_input_pin_schema,
-        cv.Required(CONF_WATER_FULL_SENSOR): binary_sensor.binary_sensor_schema(),
+# CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend(
+# # CONFIG_SCHEMA = CONFIG_SCHEMA.extend(
+#     {
+#         cv.GenerateID(): cv.declare_id(JHSClimate),
+#         cv.Required(CONF_AC_TX_PIN): pins.gpio_output_pin_schema,
+#         cv.Required(CONF_AC_RX_PIN): pins.gpio_input_pin_schema,
+#         cv.Required(CONF_PANEL_TX_PIN): pins.gpio_output_pin_schema,
+#         cv.Required(CONF_PANEL_RX_PIN): pins.gpio_input_pin_schema,
+#         cv.Required(CONF_WATER_FULL_SENSOR): binary_sensor.binary_sensor_schema(),
         
-    }
-)
+#     }
+# )
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
