@@ -38,6 +38,7 @@ CONFIG_SCHEMA = cv.All(
             cv.Required(CONF_AC_RX_PIN): pins.gpio_input_pin_schema,
             cv.Required(CONF_PANEL_TX_PIN): pins.gpio_output_pin_schema,
             cv.Required(CONF_PANEL_RX_PIN): pins.gpio_input_pin_schema,
+            cv.Required(CONF_WATER_FULL_SENSOR): binary_sensor.binary_sensor_schema(),
         }
     )
 )
