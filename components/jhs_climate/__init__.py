@@ -11,7 +11,8 @@ AUTO_LOAD = [ "binary_sensor", "climate"]
 DEPENDENCIES = []
 
 jhs_climate_ns = cg.esphome_ns.namespace("JHS")
-JHSClimate = jhs_climate_ns.class_("JHSClimate", cg.Component)
+# JHSClimate = jhs_climate_ns.class_("JHSClimate", cg.Component)
+JHSClimate = jhs_climate_ns.class_("JHSClimate", climate.Climate, cg.Component)
 
 CONF_AC_TX_PIN = 'ac_tx_pin'
 CONF_AC_RX_PIN = 'ac_rx_pin'
@@ -29,6 +30,17 @@ CONF_WATER_FULL_SENSOR = 'water_full_sensor'
 #     }
 # )
 
+CONFIG_SCHEMA = cv.All(
+    climate.climate_schema(JHSClimate).extend(
+        {
+            cv.GenerateID(): cv.declare_id(JHSClimate),
+            cv.Required(CONF_AC_TX_PIN): pins.gpio_output_pin_schema,
+            cv.Required(CONF_AC_RX_PIN): pins.gpio_input_pin_schema,
+            cv.Required(CONF_PANEL_TX_PIN): pins.gpio_output_pin_schema,
+            cv.Required(CONF_PANEL_RX_PIN): pins.gpio_input_pin_schema,
+        }
+    )
+)
 
 # später diese schema beschreibung
 # CONFIG_SCHEMA = climate.climate_schema(
